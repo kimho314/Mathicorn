@@ -1,0 +1,17 @@
+{
+    "mcpServers": {
+        "supabase": {
+            "command": "cmd",
+            "args": [
+                "/c",
+                "npx",
+                "-y",
+                "@supabase/mcp-server-supabase@latest",
+                "--project-ref=postgresql://postgres:ghtjq2959@@db.apbkobhfnmcqqzqeeqss.supabase.co:5432/postgres"
+            ],
+            "env": {
+                "SUPABASE_ACCESS_TOKEN": "sbp_1246fb9069c663b0ed63180eb28b4eb5ae36468a"
+            }
+        }
+    }
+}

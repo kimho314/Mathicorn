@@ -1,0 +1,579 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:Mathicorn/providers/game_provider.dart';
+import 'package:Mathicorn/screens/home_screen.dart';
+import 'package:Mathicorn/screens/game_setup_screen.dart';
+
+class ResultScreen extends StatefulWidget {
+  const ResultScreen({super.key});
+
+  @override
+  State<ResultScreen> createState() => _ResultScreenState();
+}
+
+class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  late AnimationController _catAnimationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _catBounceAnimation;
+  late Animation<double> _catRotateAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    _catAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    );
+    
+    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
+    
+    // 고양이 애니메이션
+    _catBounceAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _catAnimationController, curve: Curves.bounceInOut),
+    );
+    _catRotateAnimation = Tween<double>(begin: -0.1, end: 0.1).animate(
+      CurvedAnimation(parent: _catAnimationController, curve: Curves.easeInOut),
+    );
+    
+    _animationController.forward();
+    _catAnimationController.repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _catAnimationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFFFF8E1), Color(0xFFE1F5FE)],
+          ),
+        ),
+        child: SafeArea(
+          child: Consumer<GameProvider>(
+            builder: (context, gameProvider, child) {
+              final correctAnswers = gameProvider.correctAnswers;
+              final totalProblems = gameProvider.totalProblems;
+              final score = (correctAnswers / totalProblems * 100).round();
+              final duration = gameProvider.gameDuration;
+
+              return Column(
+                children: [
+                  // 상단 버튼 (고정)
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          onPressed: () => Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (context) => const HomeScreen()),
+                            (route) => false,
+                          ),
+                          icon: const Icon(Icons.home, size: 28),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (context) => const GameSetupScreen()),
+                            (route) => false,
+                          ),
+                          icon: const Icon(Icons.refresh, size: 28),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  // 메인 결과 콘텐츠 (스크롤 가능)
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: AnimatedBuilder(
+                        animation: _animationController,
+                        builder: (context, child) {
+                          return Transform.scale(
+                            scale: _scaleAnimation.value,
+                            child: Opacity(
+                              opacity: _fadeAnimation.value,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  // 고양이 애니메이션 (90점 이상일 때 표시)
+                                  if (score >= 90) _buildDancingCat(),
+                                  
+                                  // 결과 이모지 (90점 미만일 때만 표시)
+                                  if (score < 90) _buildResultEmoji(score),
+                                  
+                                  // 90점 이상일 때 메시지 표시
+                                  if (score >= 90) ...[
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Perfect!',
+                                      style: const TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 24),
+                                  
+                                  // 점수 표시
+                                  _buildScoreDisplay(score, correctAnswers, totalProblems),
+                                  const SizedBox(height: 32),
+                                  
+                                  // 시간 표시
+                                  if (duration != null) ...[
+                                    _buildTimeDisplay(duration),
+                                    const SizedBox(height: 32),
+                                  ],
+                                  
+                                  // 보상 표시
+                                  _buildRewardDisplay(score),
+                                  const SizedBox(height: 40),
+                                  
+                                  // 액션 버튼들
+                                  _buildActionButtons(),
+                                  const SizedBox(height: 40), // 하단 여백 추가
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResultEmoji(int score) {
+    String emoji;
+    String message;
+    
+    if (score >= 90) {
+      emoji = '🐱';
+      message = 'Perfect!';
+    } else if (score >= 70) {
+      emoji = '👏';
+      message = 'Great job!';
+    } else if (score >= 50) {
+      emoji = '👍';
+      message = 'Good!';
+    } else {
+      emoji = '💪';
+      message = 'Try again!';
+    }
+
+    return Column(
+      children: [
+        Text(
+          emoji,
+          style: const TextStyle(fontSize: 80),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          message,
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildScoreDisplay(int score, int correctAnswers, int totalProblems) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            '$score points',
+            style: const TextStyle(
+              fontSize: 48,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$correctAnswers / $totalProblems problems correct',
+            style: const TextStyle(
+              fontSize: 18,
+              color: Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 16),
+          LinearProgressIndicator(
+            value: correctAnswers / totalProblems,
+            backgroundColor: Colors.grey.withOpacity(0.3),
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+            minHeight: 8,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeDisplay(Duration duration) {
+    final minutes = duration.inMinutes;
+    final seconds = duration.inSeconds % 60;
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.timer, color: Colors.blue),
+          const SizedBox(width: 8),
+          Text(
+            'Time taken: ${minutes}m ${seconds}s',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRewardDisplay(int score) {
+    List<String> rewards = [];
+    
+    if (score >= 90) {
+      rewards = ['🏆', '⭐', '🎖️'];
+    } else if (score >= 70) {
+      rewards = ['⭐', '🎖️'];
+    } else if (score >= 50) {
+      rewards = ['🎖️'];
+    }
+
+    if (rewards.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.yellow.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          const Text(
+            'Rewards Earned!',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.orange,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: rewards.map((reward) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(reward, style: const TextStyle(fontSize: 32)),
+            )).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: () => Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const GameSetupScreen()),
+              (route) => false,
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: const Text(
+              'Try Again',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: OutlinedButton(
+            onPressed: () => Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+              (route) => false,
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.blue,
+              side: const BorderSide(color: Colors.blue),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: const Text(
+              'Back to Home',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDancingCat() {
+    return AnimatedBuilder(
+      animation: _catAnimationController,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, -20 * _catBounceAnimation.value),
+          child: Transform.rotate(
+            angle: _catRotateAnimation.value,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 20),
+              child: Column(
+                children: [
+                  // 축하 메시지
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.yellow[100],
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.yellow[400]!, width: 2),
+                    ),
+                    child: Text(
+                      'Perfect!',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange[700],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // 고양이
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // 고양이 귀 (왼쪽)
+                      Transform.rotate(
+                        angle: _catRotateAnimation.value * 0.5,
+                        child: Container(
+                          width: 0,
+                          height: 0,
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              left: BorderSide(color: Colors.orange, width: 12),
+                              right: BorderSide(color: Colors.transparent, width: 12),
+                              bottom: BorderSide(color: Colors.transparent, width: 16),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // 고양이 얼굴
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.orange[200],
+                          borderRadius: BorderRadius.circular(40),
+                          border: Border.all(color: Colors.orange[400]!, width: 3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.orange[300]!.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Stack(
+                          children: [
+                            // 고양이 눈
+                            Positioned(
+                              top: 20,
+                              left: 15,
+                              child: Container(
+                                width: 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 20,
+                              right: 15,
+                              child: Container(
+                                width: 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                              ),
+                            ),
+                            // 고양이 코
+                            Positioned(
+                              top: 35,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: Container(
+                                  width: 8,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: Colors.pink[300],
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // 고양이 입
+                            Positioned(
+                              bottom: 15,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: Container(
+                                  width: 20,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // 고양이 볼
+                            Positioned(
+                              top: 30,
+                              left: 8,
+                              child: Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: Colors.pink[200],
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 30,
+                              right: 8,
+                              child: Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: Colors.pink[200],
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // 고양이 귀 (오른쪽)
+                      Transform.rotate(
+                        angle: -_catRotateAnimation.value * 0.5,
+                        child: Container(
+                          width: 0,
+                          height: 0,
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              left: BorderSide(color: Colors.orange, width: 12),
+                              right: BorderSide(color: Colors.transparent, width: 12),
+                              bottom: BorderSide(color: Colors.transparent, width: 16),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // 고양이 꼬리
+                  Transform.rotate(
+                    angle: _catRotateAnimation.value * 2,
+                    child: Container(
+                      width: 40,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: Colors.orange[300],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+} 
