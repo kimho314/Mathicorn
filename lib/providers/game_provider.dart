@@ -230,9 +230,13 @@ class GameProvider extends ChangeNotifier {
       case OperationType.addition:
         // 덧셈: 자리 올림 없이 시작
         if (levelConfig.level == GameLevel.level1) {
-          // Lv1: 1~5 범위, 자리 올림 없음
-          num1 = random.nextInt(5) + 1;
-          num2 = random.nextInt(5 - num1 + 1) + 1;
+          // Lv1: 1~10 범위 덧셈
+          num1 = random.nextInt(10) + 1;
+          num2 = random.nextInt(10) + 1;
+        } else if (levelConfig.level == GameLevel.level3) {
+          // Lv3: 1~20 범위 덧셈 (두 자리 수 + 한 자리 수 조합)
+          num1 = random.nextInt(9) + 10; // 10~18 (두 자리 수)
+          num2 = random.nextInt(9) + 1;  // 1~9 (한 자리 수)
         } else if (levelConfig.level == GameLevel.level5) {
           // Lv5: 두 자리 수 덧셈, 자리 올림 없음
           num1 = random.nextInt(40) + 10; // 10~49
@@ -246,11 +250,21 @@ class GameProvider extends ChangeNotifier {
         break;
         
       case OperationType.subtraction:
-        // 뺄셈: 자리 내림 없이 시작
+        // 뺄셈: 결과가 음수가 되지 않도록
         if (levelConfig.level == GameLevel.level2) {
-          // Lv2: 1~10 범위, 자리 내림 없음
+          // Lv2: 1~10 범위 뺄셈, 결과가 음수가 되지 않도록
           num1 = random.nextInt(10) + 1;
-          num2 = random.nextInt(num1) + 1;
+          num2 = random.nextInt(num1) + 1; // num2 <= num1
+        } else if (levelConfig.level == GameLevel.level4) {
+          // Lv4: 1~20 범위 뺄셈 (두 자리 수 - 한 자리 수 조합), 결과가 음수가 되지 않도록
+          num1 = random.nextInt(9) + 10; // 10~18 (두 자리 수)
+          num2 = random.nextInt(9) + 1;  // 1~9 (한 자리 수)
+          // num1이 num2보다 크도록 보장
+          if (num1 < num2) {
+            int temp = num1;
+            num1 = num2;
+            num2 = temp;
+          }
         } else if (levelConfig.level == GameLevel.level6) {
           // Lv6: 두 자리 수 뺄셈, 자리 내림 없음
           num1 = random.nextInt(40) + 50; // 50~89

@@ -44,7 +44,6 @@
 | email | VARCHAR(100) | 이메일 주소 (UNIQUE) |
 | password | VARCHAR(255) | 비밀번호 해시값 |
 | nickname | VARCHAR(50) | 사용자 닉네임 (UNIQUE) |
-| avatar | VARCHAR(50) | 아바타 이름 |
 | created_at | TIMESTAMP | 생성일 |
 | updated_at | TIMESTAMP | 수정일 (트리거로 관리) |
 
@@ -83,26 +82,12 @@
 CREATE TABLE users (
     id UUID PRIMARY KEY,
     email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
+    -- password VARCHAR(255) NOT NULL,
     nickname VARCHAR(50) UNIQUE,
-    avatar VARCHAR(50) DEFAULT 'default',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 자동 updated_at 트리거 함수
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = now();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
-CREATE TRIGGER set_updated_at
-BEFORE UPDATE ON users
-FOR EACH ROW
-EXECUTE PROCEDURE update_updated_at_column();
 
 -- 2. 오답 노트 테이블
 CREATE TABLE wrong_answers (
@@ -137,15 +122,7 @@ CREATE TABLE statistics (
 );
 ```
 
----
-
-## 📌 확장 아이디어 (후속 개발용)
-- `game_sessions` 테이블로 학습 시간 트래킹
-- `levels` 테이블로 난이도 정책 분리
-- `achievements` 테이블로 뱃지/보상 연동
-
----
 
 ## ✅ 문서 버전
 - 최종 업데이트: 2025-06-28
-- 작성자: ChatGPT + hoseop kim
+- 작성자: hoseop kim

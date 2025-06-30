@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:Mathicorn/providers/game_provider.dart';
+import 'package:Mathicorn/providers/settings_provider.dart';
 import 'package:Mathicorn/screens/result_screen.dart';
 import 'package:Mathicorn/models/math_problem.dart';
 import 'package:Mathicorn/screens/home_screen.dart';
@@ -429,8 +430,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   void _showCongratulationsDialog(MathProblem problem, GameProvider gameProvider) {
-    final player = AudioPlayer();
-    player.play(AssetSource('sounds/correct.mp3'));
+    // 사운드 설정 확인
+    final settingsProvider = context.read<SettingsProvider>();
+    if (settingsProvider.soundEnabled) {
+      final player = AudioPlayer();
+      player.play(AssetSource('sounds/correct.mp3'));
+    }
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -512,8 +518,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   void _showWrongAnswerDialog(MathProblem problem, GameProvider gameProvider) {
-    final player = AudioPlayer();
-    player.play(AssetSource('sounds/wrong.mp3'));
+    // 사운드 설정 확인
+    final settingsProvider = context.read<SettingsProvider>();
+    if (settingsProvider.soundEnabled) {
+      final player = AudioPlayer();
+      player.play(AssetSource('sounds/wrong.mp3'));
+    }
+    
     setState(() {
       _showingWrongAnswerDialog = true;
     });

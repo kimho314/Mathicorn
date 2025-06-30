@@ -37,7 +37,14 @@ class FunnyCalcApp extends StatelessWidget {
             return provider;
           },
         ),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(
+          create: (_) {
+            final provider = SettingsProvider();
+            // 앱 시작 시 설정 로드
+            provider.loadSettings();
+            return provider;
+          },
+        ),
         ChangeNotifierProvider(create: (_) => WrongNoteProvider()),
       ],
       child: MaterialApp(
