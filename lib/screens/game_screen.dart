@@ -30,6 +30,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   bool _showingCorrectAnswer = false; // 정답 확인 모드 상태
   bool _showingCongratulations = false; // 축하 메시지 표시 상태
 
+  // 오디오 플레이어를 클래스 변수로 선언
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
   @override
   void initState() {
     super.initState();
@@ -56,6 +59,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void dispose() {
     _questionAnimationController.dispose();
     _feedbackAnimationController.dispose();
+    _audioPlayer.dispose(); // 오디오 플레이어 해제
     super.dispose();
   }
 
@@ -433,8 +437,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     // 사운드 설정 확인
     final settingsProvider = context.read<SettingsProvider>();
     if (settingsProvider.soundEnabled) {
-      final player = AudioPlayer();
-      player.play(AssetSource('sounds/correct.mp3'));
+      _audioPlayer.stop(); // 기존 사운드 중지
+      _audioPlayer.play(AssetSource('sounds/correct.mp3'));
     }
     
     showDialog(
@@ -497,6 +501,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void _moveToNextProblem() {
     if (!mounted) return;
     
+    // 문제 넘어갈 때 사운드 중지
+    _audioPlayer.stop();
     // GameProvider에서 다음 문제로 이동
     final gameProvider = context.read<GameProvider>();
     gameProvider.moveToNextProblem();
@@ -521,8 +527,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     // 사운드 설정 확인
     final settingsProvider = context.read<SettingsProvider>();
     if (settingsProvider.soundEnabled) {
-      final player = AudioPlayer();
-      player.play(AssetSource('sounds/wrong.mp3'));
+      _audioPlayer.stop(); // 기존 사운드 중지
+      _audioPlayer.play(AssetSource('sounds/wrong.mp3'));
     }
     
     setState(() {
