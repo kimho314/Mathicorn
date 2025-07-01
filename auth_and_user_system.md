@@ -71,7 +71,9 @@
 | total_correct | INTEGER | 정답 수 |
 | average_accuracy | FLOAT | 평균 정답률 (0.0~1.0) |
 | favorite_operation | VARCHAR(20) | 자주 푼 연산 유형 |
-| average_session_time | FLOAT | 평균 세션 시간 (분 단위) |
+| average_time_per_question | FLOAT | 문제당 평균 풀이 시간(초 단위위) |
+| weakest_operation | VARCHAR(20) | 가장 낮은 정답률의 연산 |
+| daily_activity | JSONB | 날짜별 문제 수 (예: { "2025-06-27": 10 }) |
 
 ---
 
@@ -113,9 +115,11 @@ CREATE TABLE statistics (
     total_correct INTEGER DEFAULT 0,
     average_accuracy FLOAT DEFAULT 0.0,
     favorite_operation VARCHAR(20),
-    average_session_time FLOAT DEFAULT 0.0,
+    average_time_per_question FLOAT DEFAULT 0.0,
+    weakest_operation VARCHAR(20),
+    daily_activity JSONB DEFAULT '{}',
 
-    CONSTRAINT fk_stat_user
+    CONSTRAINT fk_statistics_user
         FOREIGN KEY(user_id)
         REFERENCES users(id)
         ON DELETE CASCADE

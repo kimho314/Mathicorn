@@ -10,6 +10,7 @@ import 'package:Mathicorn/screens/home_screen.dart';
 import 'package:Mathicorn/screens/auth_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/main_shell.dart';
+import 'package:Mathicorn/providers/statistics_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,6 +47,7 @@ class FunnyCalcApp extends StatelessWidget {
           },
         ),
         ChangeNotifierProvider(create: (_) => WrongNoteProvider()),
+        ChangeNotifierProvider(create: (_) => StatisticsProvider()),
       ],
       child: MaterialApp(
         title: 'Mathicorn',

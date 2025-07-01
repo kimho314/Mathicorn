@@ -11,6 +11,7 @@ import 'package:Mathicorn/models/math_problem.dart';
 import 'package:Mathicorn/providers/wrong_note_provider.dart';
 import 'package:Mathicorn/providers/auth_provider.dart';
 import 'package:Mathicorn/widgets/login_required_dialog.dart';
+import 'package:Mathicorn/screens/main_shell.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -180,21 +181,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
                 icon: const Icon(Icons.settings, color: Colors.white, size: 28),
               ),
-              Consumer<AuthProvider>(
-                builder: (context, auth, child) {
-                  if (!auth.isLoggedIn) return const SizedBox.shrink();
-                  return IconButton(
-                    tooltip: 'Logout',
-                    icon: const Icon(Icons.logout, color: Colors.white, size: 28),
-                    onPressed: () async {
-                      await auth.signOut();
-                      if (context.mounted) {
-                        Navigator.of(context).popUntil((route) => route.isFirst);
-                      }
-                    },
-                  );
-                },
-              ),
             ],
           ),
         ],
@@ -259,10 +245,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             if (!auth.isLoggedIn) {
               await showLoginRequiredDialog(context);
             } else {
-              // 통계 화면 이동 (추후 구현)
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Statistics feature coming soon!')),
-              );
+              // MainShell의 statistics 탭(인덱스 3)으로 이동
+              Navigator.of(context).popUntil((route) => route.isFirst);
+              // MainShellState에 접근해 탭 변경
+              // (context.findAncestorStateOfType<_MainShellState>()는 불가하므로, 이벤트 전달 방식 사용)
+              // 아래는 간단한 예시: MainShell이 static 메서드로 접근 허용
+              MainShell.setTabIndex?.call(3);
             }
           },
         ),

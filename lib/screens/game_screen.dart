@@ -8,6 +8,8 @@ import 'package:Mathicorn/models/math_problem.dart';
 import 'package:Mathicorn/screens/home_screen.dart';
 import 'package:lottie/lottie.dart';
 import 'package:audioplayers/audioplayers.dart';
+import '../providers/statistics_provider.dart';
+import '../providers/auth_provider.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -29,6 +31,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   bool _showingWrongAnswerDialog = false; // 오답 다이얼로그 표시 상태
   bool _showingCorrectAnswer = false; // 정답 확인 모드 상태
   bool _showingCongratulations = false; // 축하 메시지 표시 상태
+  DateTime? _problemStartTime;
 
   // 오디오 플레이어를 클래스 변수로 선언
   final AudioPlayer _audioPlayer = AudioPlayer();
@@ -81,6 +84,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         _showingCongratulations = false; // 축하 메시지도 초기화
       });
       _previousProblem = currentProblem;
+      _problemStartTime = DateTime.now(); // 문제 시작 시각 기록
       
       // 애니메이션 컨트롤러 완전 리셋
       _feedbackAnimationController.reset();
@@ -407,6 +411,23 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       _selectedAnswer = answer;
     });
     final isCorrect = gameProvider.answerQuestion(answer);
+
+    // 통계 자동 갱신
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    if (auth.isLoggedIn && auth.user != null) {
+      final statisticsProvider = Provider.of<StatisticsProvider>(context, listen: false);
+      final now = DateTime.now();
+      final dateStr = "${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+      final timeTaken = _problemStartTime != null ? now.difference(_problemStartTime!).inMilliseconds / 1000.0 : 5.0;
+      statisticsProvider.updateStatisticsOnSubmit(
+        isCorrect: isCorrect,
+        operation: problem.operationText,
+        timeTaken: timeTaken,
+        date: dateStr,
+        level: problem.level != null ? problem.level!.index + 1 : null,
+      );
+    }
+
     if (mounted) {
       setState(() {
         _showingFeedback = true;
