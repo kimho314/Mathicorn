@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:Mathicorn/providers/game_provider.dart';
 import 'package:Mathicorn/models/user_profile.dart';
 import 'package:Mathicorn/providers/auth_provider.dart';
+import 'package:Mathicorn/screens/main_shell.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -67,6 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               await context.read<AuthProvider>().signOut();
               if (mounted) {
                 Navigator.of(context).popUntil((route) => route.isFirst);
+                MainShell.setTabIndex?.call(0);
               }
             },
           ),
