@@ -11,6 +11,7 @@ import 'package:Mathicorn/screens/auth_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/main_shell.dart';
 import 'package:Mathicorn/providers/statistics_provider.dart';
+import 'package:lottie/lottie.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,35 +53,157 @@ class FunnyCalcApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Mathicorn',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Color(0xFFB388FF),
+          colorScheme: ColorScheme(
             brightness: Brightness.light,
-            primary: Color(0xFFB388FF),
-            secondary: Color(0xFFFFF176),
-            background: Color(0xFFF3E5F5),
+            primary: const Color(0xFF8B5CF6), // purple
+            onPrimary: Colors.white,
+            secondary: const Color(0xFF06B6D4), // cyan
+            onSecondary: Colors.white,
+            error: const Color(0xFFEC4899), // pink
+            onError: Colors.white,
+            background: const Color(0xFFF8FAFC), // lightGray
+            onBackground: const Color(0xFF1E293B), // darkText
+            surface: Colors.white,
+            onSurface: const Color(0xFF64748B), // textGray
           ),
-          textTheme: GoogleFonts.baloo2TextTheme(),
-          useMaterial3: true,
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-              elevation: 4,
-              textStyle: GoogleFonts.baloo2(fontWeight: FontWeight.bold, fontSize: 18),
+          scaffoldBackgroundColor: Colors.transparent,
+          fontFamily: 'NotoSansKR',
+          textTheme: GoogleFonts.baloo2TextTheme().copyWith(
+            headlineLarge: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 32,
+              shadows: [Shadow(offset: Offset(2,2), blurRadius: 4, color: Colors.black26)],
             ),
+            titleLarge: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 20,
+              shadows: [Shadow(offset: Offset(2,2), blurRadius: 4, color: Colors.black12)],
+            ),
+            bodyLarge: const TextStyle(
+              color: Color(0xFF1E293B),
+              fontWeight: FontWeight.w500,
+              fontSize: 16,
+            ),
+            bodyMedium: const TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 14,
+            ),
+          ).apply(
+            fontFamilyFallback: ['NotoSansKR', 'sans-serif'],
           ),
           cardTheme: CardThemeData(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            color: Colors.white.withOpacity(0.25),
             elevation: 6,
-            color: Color(0xFFFFFFFF),
-            shadowColor: Color(0xFFB388FF).withOpacity(0.2),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            shadowColor: const Color(0xFF8B5CF6).withOpacity(0.1),
+            margin: const EdgeInsets.all(8),
+          ),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            foregroundColor: Colors.white,
+            centerTitle: true,
+            titleTextStyle: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 22,
+              shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+            ),
+          ),
+          navigationBarTheme: NavigationBarThemeData(
+            backgroundColor: Colors.white.withOpacity(0.15),
+            indicatorColor: const Color(0xFF8B5CF6).withOpacity(0.15),
+            labelTextStyle: MaterialStateProperty.all(const TextStyle(
+              color: Color(0xFF8B5CF6),
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            )),
+            iconTheme: MaterialStateProperty.all(const IconThemeData(
+              color: Color(0xFF8B5CF6),
+              size: 28,
+            )),
           ),
         ),
         debugShowCheckedModeBanner: false,
-        home: const MainShell(),
+        home: const _UnicornBackground(
+          child: MainShell(),
+        ),
         routes: {
           '/auth': (_) => const AuthScreen(),
         },
       ),
+    );
+  }
+}
+
+// App-wide unicorn/kawaii gradient background with decorative elements
+class _UnicornBackground extends StatelessWidget {
+  final Widget child;
+  const _UnicornBackground({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Main gradient background
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF8B5CF6), // purple
+                Color(0xFFD946EF), // magenta
+                Color(0xFFEC4899), // pink
+              ],
+              stops: [0.0, 0.5, 1.0],
+            ),
+          ),
+        ),
+        // Decorative unicorn, star, and confetti Lottie animations
+        IgnorePointer(
+          child: Stack(
+            children: [
+              Positioned(
+                top: 40,
+                left: 20,
+                child: SizedBox(
+                  width: 90,
+                  child: Opacity(
+                    opacity: 0.85,
+                    child: Lottie.asset('assets/animations/unicorn.json', repeat: true),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 60,
+                right: 30,
+                child: SizedBox(
+                  width: 60,
+                  child: Opacity(
+                    opacity: 0.7,
+                    child: Lottie.asset('assets/animations/star.json', repeat: true),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 120,
+                right: 40,
+                child: SizedBox(
+                  width: 80,
+                  child: Opacity(
+                    opacity: 0.5,
+                    child: Lottie.asset('assets/animations/confetti.json', repeat: true),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        child,
+      ],
     );
   }
 } 

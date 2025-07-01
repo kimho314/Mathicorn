@@ -79,7 +79,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFE3F2FD), Color(0xFFF3E5F5)],
+            colors: [
+              Color(0xFF8ED6FB), // sky blue
+              Color(0xFFA0EACF), // light green
+            ],
           ),
         ),
         child: Consumer<GameProvider>(
@@ -123,38 +126,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.25),
+            Colors.white.withOpacity(0.10),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Column(
         children: [
-          // 프로필 이미지
           CircleAvatar(
             radius: 50,
-            backgroundColor: Colors.blue.withOpacity(0.1),
+            backgroundColor: const Color(0xFFF8FAFC),
             child: Text(
               auth.nickname.substring(0, 1).toUpperCase(),
               style: const TextStyle(
                 fontSize: 40,
                 fontWeight: FontWeight.bold,
-                color: Colors.blue,
+                color: Color(0xFF8B5CF6),
               ),
             ),
           ),
           const SizedBox(height: 16),
-          // 이름 입력
           if (_isEditing) ...[
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(
-                labelText: '닉네임',
+                labelText: 'Nickname',
                 border: OutlineInputBorder(),
               ),
               textAlign: TextAlign.center,
@@ -167,7 +176,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: Colors.white,
+                shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
               ),
             ),
             const SizedBox(height: 8),
@@ -181,13 +191,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.25),
+            Colors.white.withOpacity(0.10),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -199,113 +217,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Tap each item for details and tips',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-              fontStyle: FontStyle.italic,
+              color: Colors.white,
+              shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatItem(
-                  'Total Problems',
-                  '${userProfile?.totalProblems ?? 0}',
-                  Icons.quiz,
-                  Colors.blue,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildStatItem(
-                  'Total Score',
-                  '${userProfile?.totalScore ?? 0}',
-                  Icons.star,
-                  Colors.orange,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatItem(
-                  'Accuracy',
-                  userProfile?.totalProblems != null && userProfile!.totalProblems > 0
-                      ? '${((userProfile.totalScore / userProfile.totalProblems) * 100).round()}%'
-                      : '0%',
-                  Icons.trending_up,
-                  Colors.green,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildStatItem(
-                  'Stickers',
-                  '${userProfile?.collectedStickers.length ?? 0}',
-                  Icons.emoji_emotions,
-                  Colors.purple,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(String title, String value, IconData icon, Color color) {
-    return GestureDetector(
-      onTap: () => _showStatDetailDialog(title, color),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+          if (userProfile != null) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Total Score:', style: TextStyle(color: Colors.white)),
+                Text('${userProfile.totalScore}', style: TextStyle(color: Color(0xFFFDE047), fontWeight: FontWeight.bold)),
+              ],
             ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 24),
             const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Icon(
-              Icons.info_outline,
-              size: 16,
-              color: color.withOpacity(0.6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Total Problems:', style: TextStyle(color: Colors.white)),
+                Text('${userProfile.totalProblems}', style: TextStyle(color: Color(0xFF06B6D4), fontWeight: FontWeight.bold)),
+              ],
             ),
           ],
-        ),
+        ],
       ),
     );
   }

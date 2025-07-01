@@ -9,98 +9,59 @@ class GalleryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Collected Stickers'),
-        backgroundColor: Colors.orange,
-        foregroundColor: Colors.white,
+        title: const Text('Gallery'),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFFFF8E1), Color(0xFFFFE0B2)],
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.25),
+                Colors.white.withOpacity(0.10),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.10),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-        ),
-        child: Consumer<GameProvider>(
-          builder: (context, gameProvider, child) {
-            final userProfile = gameProvider.userProfile;
-            final stickers = userProfile?.collectedStickers ?? [];
-            
-            return Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                children: [
-                  // 헤더
-                  _buildHeader(stickers.length),
-                  const SizedBox(height: 20),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Sticker Gallery',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Consumer<GameProvider>(
+                builder: (context, gameProvider, child) {
+                  final userProfile = gameProvider.userProfile;
+                  final stickers = userProfile?.collectedStickers ?? [];
                   
-                  // 스티커 그리드
-                  Expanded(
+                  return Expanded(
                     child: stickers.isEmpty
                         ? _buildEmptyState(context)
                         : _buildStickerGrid(stickers, context),
-                  ),
-                ],
+                  );
+                },
               ),
-            );
-          },
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(int stickerCount) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.emoji_emotions,
-              color: Colors.orange,
-              size: 32,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Collected Stickers',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                Text(
-                  'Total $stickerCount collected!',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -31,7 +31,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFE3F2FD), Color(0xFFF3E5F5)],
+            colors: [
+              Color(0xFF8ED6FB), // sky blue
+              Color(0xFFA0EACF), // light green
+            ],
           ),
         ),
         child: Consumer<SettingsProvider>(

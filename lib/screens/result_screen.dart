@@ -60,112 +60,118 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFFFF8E1), Color(0xFFE1F5FE)],
+      appBar: AppBar(
+        title: const Text('Result'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.25),
+                Colors.white.withOpacity(0.10),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.10),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-        ),
-        child: SafeArea(
-          child: Consumer<GameProvider>(
-            builder: (context, gameProvider, child) {
-              final correctAnswers = gameProvider.correctAnswers;
-              final totalProblems = gameProvider.totalProblems;
-              final score = (correctAnswers / totalProblems * 100).round();
-              final duration = gameProvider.gameDuration;
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Game Result',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Consumer<GameProvider>(
+                builder: (context, gameProvider, child) {
+                  final correctAnswers = gameProvider.correctAnswers;
+                  final totalProblems = gameProvider.totalProblems;
+                  final score = (correctAnswers / totalProblems * 100).round();
+                  final duration = gameProvider.gameDuration;
 
-              return Column(
-                children: [
-                  // 상단 버튼 (고정)
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          onPressed: () => Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (context) => const HomeScreen()),
-                            (route) => false,
+                  return Column(
+                    children: [
+                      // 메인 결과 콘텐츠 (스크롤 가능)
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: AnimatedBuilder(
+                            animation: _animationController,
+                            builder: (context, child) {
+                              return Transform.scale(
+                                scale: _scaleAnimation.value,
+                                child: Opacity(
+                                  opacity: _fadeAnimation.value,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      // 고양이 애니메이션 (90점 이상일 때 표시)
+                                      if (score >= 90) _buildDancingCat(),
+                                      
+                                      // 결과 이모지 (90점 미만일 때만 표시)
+                                      if (score < 90) _buildResultEmoji(score),
+                                      
+                                      // 90점 이상일 때 메시지 표시
+                                      if (score >= 90) ...[
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Perfect!',
+                                          style: const TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ],
+                                      const SizedBox(height: 24),
+                                      
+                                      // 점수 표시
+                                      _buildScoreDisplay(score, correctAnswers, totalProblems),
+                                      const SizedBox(height: 32),
+                                      
+                                      // 시간 표시
+                                      if (duration != null) ...[
+                                        _buildTimeDisplay(duration),
+                                        const SizedBox(height: 32),
+                                      ],
+                                      
+                                      // 보상 표시
+                                      _buildRewardDisplay(score),
+                                      const SizedBox(height: 40),
+                                      
+                                      // 액션 버튼들
+                                      _buildActionButtons(),
+                                      const SizedBox(height: 40), // 하단 여백 추가
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                          icon: const Icon(Icons.home, size: 28),
                         ),
-                        IconButton(
-                          onPressed: () => Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (context) => const GameSetupScreen()),
-                            (route) => false,
-                          ),
-                          icon: const Icon(Icons.refresh, size: 28),
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  // 메인 결과 콘텐츠 (스크롤 가능)
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: AnimatedBuilder(
-                        animation: _animationController,
-                        builder: (context, child) {
-                          return Transform.scale(
-                            scale: _scaleAnimation.value,
-                            child: Opacity(
-                              opacity: _fadeAnimation.value,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  // 고양이 애니메이션 (90점 이상일 때 표시)
-                                  if (score >= 90) _buildDancingCat(),
-                                  
-                                  // 결과 이모지 (90점 미만일 때만 표시)
-                                  if (score < 90) _buildResultEmoji(score),
-                                  
-                                  // 90점 이상일 때 메시지 표시
-                                  if (score >= 90) ...[
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'Perfect!',
-                                      style: const TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  ],
-                                  const SizedBox(height: 24),
-                                  
-                                  // 점수 표시
-                                  _buildScoreDisplay(score, correctAnswers, totalProblems),
-                                  const SizedBox(height: 32),
-                                  
-                                  // 시간 표시
-                                  if (duration != null) ...[
-                                    _buildTimeDisplay(duration),
-                                    const SizedBox(height: 32),
-                                  ],
-                                  
-                                  // 보상 표시
-                                  _buildRewardDisplay(score),
-                                  const SizedBox(height: 40),
-                                  
-                                  // 액션 버튼들
-                                  _buildActionButtons(),
-                                  const SizedBox(height: 40), // 하단 여백 추가
-                                ],
-                              ),
-                            ),
-                          );
-                        },
                       ),
-                    ),
-                  ),
-                ],
-              );
-            },
+                    ],
+                  );
+                },
+              ),
+            ],
           ),
         ),
       ),

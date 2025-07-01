@@ -96,12 +96,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFE8F5E8), Color(0xFFF0F8FF)],
+            colors: [
+              Color(0xFF8ED6FB), // sky blue
+              Color(0xFFA0EACF), // light green
+            ],
           ),
         ),
         child: SafeArea(
@@ -145,33 +149,21 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 }
               });
 
-              return Column(
-                children: [
-                  // 상단 진행률 바
-                  _buildProgressBar(gameProvider),
-                  
-                  // 축하 메시지 (정답일 때만 표시)
-                  if (_showingCongratulations)
-                    _buildCongratulationsMessage(),
-                  
-                  // 메인 문제 영역
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // 문제 표시
-                          _buildQuestionDisplay(currentProblem),
-                          const SizedBox(height: 40),
-                          
-                          // 선택지 버튼들
-                          _buildAnswerChoices(currentProblem, gameProvider),
-                        ],
-                      ),
-                    ),
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildProgressBar(gameProvider),
+                      if (_showingCongratulations)
+                        _buildCongratulationsMessage(),
+                      _buildQuestionDisplay(currentProblem),
+                      const SizedBox(height: 40),
+                      _buildAnswerChoices(currentProblem, gameProvider),
+                    ],
                   ),
-                ],
+                ),
               );
             },
           ),

@@ -41,60 +41,72 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         }
         return Scaffold(
           appBar: AppBar(
-            title: const Text('📊 My Statistics'),
+            title: const Text('\ud83d\udcca My Statistics'),
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // 상단 카드
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _StatCard(
-                      icon: Icons.psychology,
-                      label: 'Total Solved',
-                      value: '${stats.totalSolved} problems',
-                    ),
-                    _StatCard(
-                      icon: Icons.check_circle,
-                      label: 'Accuracy',
-                      value: '${stats.averageAccuracy.toStringAsFixed(1)}%',
-                    ),
-                    _StatCard(
-                      icon: Icons.timer,
-                      label: 'Avg. Time',
-                      value: '${stats.averageTimePerQuestion.toStringAsFixed(1)}s',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                // 일별 학습량 차트 (BarChart)
-                _SectionTitle(title: '📈 Daily Activity'),
-                SizedBox(
-                  height: 180,
-                  child: _DailyActivityBarChart(dailyActivity: stats.dailyActivity),
-                ),
-                const SizedBox(height: 16),
-                // 연산별 정확도 차트 (PieChart)
-                _SectionTitle(title: '📊 Operation Accuracy'),
-                SizedBox(
-                  height: 140,
-                  child: _OperationAccuracyPieChart(
-                    operationAccuracy: stats.operationAccuracy,
+          body: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF8ED6FB), // sky blue
+                  Color(0xFFA0EACF), // light green
+                ],
+              ),
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 상단 카드
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _StatCard(
+                        icon: Icons.psychology,
+                        label: 'Total Solved',
+                        value: '${stats.totalSolved} problems',
+                      ),
+                      _StatCard(
+                        icon: Icons.check_circle,
+                        label: 'Accuracy',
+                        value: '${stats.averageAccuracy.toStringAsFixed(1)}%',
+                      ),
+                      _StatCard(
+                        icon: Icons.timer,
+                        label: 'Avg. Time',
+                        value: '${stats.averageTimePerQuestion.toStringAsFixed(1)}s',
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 16),
-                // 레벨별 정확도 차트 (LineChart)
-                _SectionTitle(title: '🔢 Level Accuracy'),
-                SizedBox(
-                  height: 140,
-                  child: _LevelAccuracyLineChart(
-                    levelAccuracy: stats.levelAccuracy,
+                  const SizedBox(height: 24),
+                  // 일별 학습량 차트 (BarChart)
+                  _SectionTitle(title: '📈 Daily Activity'),
+                  SizedBox(
+                    height: 180,
+                    child: _DailyActivityBarChart(dailyActivity: stats.dailyActivity),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  // 연산별 정확도 차트 (PieChart)
+                  _SectionTitle(title: '📊 Operation Accuracy'),
+                  SizedBox(
+                    height: 140,
+                    child: _OperationAccuracyPieChart(
+                      operationAccuracy: stats.operationAccuracy,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // 레벨별 정확도 차트 (LineChart)
+                  _SectionTitle(title: '🔢 Level Accuracy'),
+                  SizedBox(
+                    height: 140,
+                    child: _LevelAccuracyLineChart(
+                      levelAccuracy: stats.levelAccuracy,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -111,22 +123,37 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        width: 100,
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 32, color: Theme.of(context).primaryColor),
-            const SizedBox(height: 8),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontSize: 16)),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.25),
+            Colors.white.withOpacity(0.10),
           ],
         ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 32, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)])),
+          const SizedBox(height: 4),
+          Text(value, style: const TextStyle(fontSize: 16, color: Colors.white)),
+        ],
       ),
     );
   }
@@ -167,7 +194,7 @@ class _DailyActivityBarChart extends StatelessWidget {
           barRods: [
             BarChartRodData(
               toY: dailyActivity[date]!.toDouble(),
-              color: Theme.of(context).primaryColor,
+              color: Theme.of(context).colorScheme.primary,
               width: 18,
               borderRadius: BorderRadius.circular(6),
             ),
@@ -176,36 +203,57 @@ class _DailyActivityBarChart extends StatelessWidget {
       );
       idx++;
     }
-    return BarChart(
-      BarChartData(
-        alignment: BarChartAlignment.spaceAround,
-        maxY: (dailyActivity.values.isNotEmpty ? dailyActivity.values.reduce((a, b) => a > b ? a : b) + 2 : 10).toDouble(),
-        barGroups: barGroups,
-        titlesData: FlTitlesData(
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: true, reservedSize: 28),
-          ),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (double value, TitleMeta meta) {
-                final idx = value.toInt();
-                if (idx < 0 || idx >= sortedKeys.length) return const SizedBox.shrink();
-                final date = sortedKeys[idx];
-                // 날짜 MM-dd만 표시
-                final label = date.length >= 10 ? date.substring(5) : date;
-                return Padding(
-                  padding: const EdgeInsets.only(top: 6.0),
-                  child: Text(label, style: const TextStyle(fontSize: 12)),
-                );
-              },
-            ),
-          ),
-          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.20),
+            Colors.white.withOpacity(0.08),
+          ],
         ),
-        gridData: FlGridData(show: true),
-        borderData: FlBorderData(show: false),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(8),
+      child: BarChart(
+        BarChartData(
+          alignment: BarChartAlignment.spaceAround,
+          maxY: (dailyActivity.values.isNotEmpty ? dailyActivity.values.reduce((a, b) => a > b ? a : b) + 2 : 10).toDouble(),
+          barGroups: barGroups,
+          titlesData: FlTitlesData(
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: true, reservedSize: 28),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (double value, TitleMeta meta) {
+                  final idx = value.toInt();
+                  if (idx < 0 || idx >= sortedKeys.length) return const SizedBox.shrink();
+                  final date = sortedKeys[idx];
+                  final label = date.length >= 10 ? date.substring(5) : date;
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 6.0),
+                    child: Text(label, style: const TextStyle(fontSize: 12, color: Colors.white)),
+                  );
+                },
+              ),
+            ),
+            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          ),
+          gridData: FlGridData(show: true),
+          borderData: FlBorderData(show: false),
+        ),
       ),
     );
   }

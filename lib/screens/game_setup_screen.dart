@@ -19,26 +19,72 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const Text('Game Setup'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF87CEEB), // sky blue
+                Color(0xFF98FB98), // light green
+              ],
+            ),
+          ),
+        ),
       ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFE3F2FD), Color(0xFFF3E5F5)],
+            colors: [
+              Color(0xFF87CEEB), // sky blue (same as home screen)
+              Color(0xFF98FB98), // light green (same as home screen)
+            ],
           ),
         ),
-        child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
           child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withOpacity(0.25),
+                    Colors.white.withOpacity(0.10),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.10),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const Text(
+                    'Game Settings',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   _buildProblemCountSection(),
                   const SizedBox(height: 30),
                   _buildLevelSelectionSection(),
@@ -64,14 +110,15 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Colors.white,
+            shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
           ),
         ),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -95,7 +142,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue,
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -106,7 +153,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                 min: 5,
                 max: 20,
                 divisions: 3,
-                activeColor: Colors.blue,
+                activeColor: Colors.white,
                 onChanged: (value) {
                   setState(() {
                     _selectedProblemCount = value.round();
@@ -138,7 +185,8 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Colors.white,
+            shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
           ),
         ),
         const SizedBox(height: 8),
@@ -153,7 +201,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -235,7 +283,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? color : Colors.black87,
+                          color: isSelected ? color : Colors.white,
                         ),
                       ),
                       Text(
@@ -292,7 +340,8 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: Colors.white,
+                shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
               ),
             ),
             if (isLevelSelected) ...[
@@ -330,7 +379,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -438,7 +487,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: isSelected ? color : Colors.black87,
+                            color: isSelected ? color : Colors.white,
                           ),
                         ),
                         Text(
@@ -475,8 +524,8 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
           }
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.blue,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),

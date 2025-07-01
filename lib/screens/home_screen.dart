@@ -251,21 +251,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       width: double.infinity,
       height: 80,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.25),
+            Colors.white.withOpacity(0.10),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
+        // Glassmorphism effect: blur
+        // (Flutter does not support backdropFilter in BoxDecoration directly, so use ClipRRect+BackdropFilter in widget tree if needed)
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(24),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -274,10 +284,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    color: color.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(icon, color: color, size: 24),
+                  child: Icon(icon, color: color, size: 28),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -290,20 +300,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: Colors.white,
+                          shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
                         ),
                       ),
                       Text(
                         subtitle,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Colors.black54,
+                          color: Color(0xFFF8FAFC),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.arrow_forward_ios, color: Colors.grey),
+                const Icon(Icons.arrow_forward_ios, color: Colors.white70),
               ],
             ),
           ),
