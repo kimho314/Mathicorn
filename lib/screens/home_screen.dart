@@ -40,7 +40,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<GameProvider>().loadUserProfile();
       final wrongNoteProvider = context.read<WrongNoteProvider>();
-      wrongNoteProvider.userId = 'student123';
+      final auth = context.read<AuthProvider>();
+      if (auth.isLoggedIn && auth.user != null) {
+        wrongNoteProvider.userId = auth.user!.id;
+      } else {
+        wrongNoteProvider.userId = null;
+      }
       context.read<GameProvider>().wrongNoteProvider = wrongNoteProvider;
     });
   }
@@ -196,26 +201,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           title: 'Start Game',
           subtitle: 'Solve math problems!',
           color: Colors.green,
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const GameSetupScreen()),
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildMenuButton(
-          icon: Icons.person,
-          title: 'Profile',
-          subtitle: 'Check your information',
-          color: Colors.blue,
-          onTap: () async {
-            if (!auth.isLoggedIn) {
-              await showLoginRequiredDialog(context);
-            } else {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ProfileScreen()),
-              );
-            }
+          onTap: () {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            MainShell.setTabIndex?.call(1);
           },
         ),
         const SizedBox(height: 16),
@@ -228,10 +216,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             if (!auth.isLoggedIn) {
               await showLoginRequiredDialog(context);
             } else {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const WrongNoteScreen()),
-              );
+              Navigator.of(context).popUntil((route) => route.isFirst);
+              MainShell.setTabIndex?.call(2);
             }
           },
         ),
@@ -245,11 +231,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             if (!auth.isLoggedIn) {
               await showLoginRequiredDialog(context);
             } else {
-              // MainShell의 statistics 탭(인덱스 3)으로 이동
               Navigator.of(context).popUntil((route) => route.isFirst);
-              // MainShellState에 접근해 탭 변경
-              // (context.findAncestorStateOfType<_MainShellState>()는 불가하므로, 이벤트 전달 방식 사용)
-              // 아래는 간단한 예시: MainShell이 static 메서드로 접근 허용
               MainShell.setTabIndex?.call(3);
             }
           },

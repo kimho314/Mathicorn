@@ -4,6 +4,7 @@ import 'package:Mathicorn/screens/game_setup_screen.dart';
 import 'package:Mathicorn/screens/wrong_note_screen.dart';
 import 'package:Mathicorn/screens/profile_screen.dart';
 import 'package:Mathicorn/screens/statistics_screen.dart';
+import 'package:Mathicorn/screens/settings_screen.dart';
 import 'package:Mathicorn/widgets/login_required_dialog.dart';
 import 'package:Mathicorn/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
@@ -26,6 +27,7 @@ class _MainShellState extends State<MainShell> {
     WrongNoteScreen(),
     StatisticsScreen(),
     ProfileScreen(),
+    SettingsScreen(),
   ];
 
   @override
@@ -82,6 +84,11 @@ class _MainShellState extends State<MainShell> {
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
             label: 'Profile',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.settings_outlined),
+            selectedIcon: Icon(Icons.settings),
+            label: 'Settings',
           ),
         ],
         backgroundColor: Color(0xFFF3E5F5),
