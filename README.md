@@ -104,19 +104,29 @@ lib/
 ├── main.dart                 # 앱 진입점
 ├── models/                   # 데이터 모델
 │   ├── math_problem.dart     # 수학 문제 모델
-│   └── user_profile.dart     # 사용자 프로필 모델
+│   ├── statistics.dart       # 통계 데이터 모델
+│   ├── user_profile.dart     # 사용자 프로필 모델
+│   └── wrong_answer.dart     # 오답 데이터 모델
 ├── providers/                # 상태 관리
-│   ├── game_provider.dart    # 게임 상태 관리
-│   └── settings_provider.dart # 설정 상태 관리
+│   ├── auth_provider.dart        # 인증 상태 관리
+│   ├── game_provider.dart        # 게임 상태 관리
+│   ├── settings_provider.dart    # 설정 상태 관리
+│   ├── statistics_provider.dart  # 통계 상태 관리
+│   └── wrong_note_provider.dart  # 오답노트 상태 관리
 ├── screens/                  # 화면
-│   ├── home_screen.dart      # 홈 화면
-│   ├── game_setup_screen.dart # 게임 설정 화면
-│   ├── game_screen.dart      # 게임 화면
-│   ├── result_screen.dart    # 결과 화면
-│   ├── profile_screen.dart   # 프로필 화면
-│   ├── settings_screen.dart  # 설정 화면
-│   └── gallery_screen.dart   # 스티커 갤러리
+│   ├── auth_screen.dart          # 인증 화면
+│   ├── gallery_screen.dart       # 스티커 갤러리
+│   ├── game_screen.dart          # 게임 화면
+│   ├── game_setup_screen.dart    # 게임 설정 화면
+│   ├── home_screen.dart          # 홈 화면
+│   ├── main_shell.dart           # 메인 쉘(네비게이션)
+│   ├── profile_screen.dart       # 프로필 화면
+│   ├── result_screen.dart        # 결과 화면
+│   ├── settings_screen.dart      # 설정 화면
+│   ├── statistics_screen.dart    # 통계 화면
+│   └── wrong_note_screen.dart    # 오답노트 화면
 ├── widgets/                  # 재사용 가능한 위젯
+│   └── login_required_dialog.dart # 로그인 필요 다이얼로그
 └── utils/                    # 유틸리티 함수
 ```
 
@@ -148,9 +158,9 @@ lib/
 
 ## 🚀 향후 개발 계획
 
-- [ ] 레벨 기능
+- [X] 레벨 기능
 - [ ] 오답 노트 기능
-- [ ] 더 많은 스티커 종류
+- [ ] 보상 시스템
 
 
 ## 🤝 기여하기
