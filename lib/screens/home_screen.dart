@@ -13,6 +13,7 @@ import 'package:Mathicorn/providers/auth_provider.dart';
 import 'package:Mathicorn/widgets/login_required_dialog.dart';
 import 'package:Mathicorn/screens/main_shell.dart';
 import '../utils/unicorn_theme.dart';
+import 'dart:ui';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -91,20 +92,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                     const SizedBox(height: 16),
                     if (!auth.isLoggedIn)
-                      Container(
-                        color: Colors.yellow[100],
-                        padding: const EdgeInsets.all(8),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.info_outline),
-                            const SizedBox(width: 8),
-                            const Expanded(child: Text('Guest님, 로그인하고 학습 기록을 저장해보세요!')),
-                            TextButton(
-                              onPressed: () => Navigator.pushNamed(context, '/auth'),
-                              child: const Text('Login / Sign Up'),
-                            ),
-                          ],
-                        ),
+                      UnicornLoginNotice(
+                        onLoginTap: () => Navigator.pushNamed(context, '/auth'),
                       ),
                     const SizedBox(height: 24),
                     _buildAppBar(auth),
@@ -279,6 +268,95 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
                 const Icon(Icons.arrow_forward_ios, color: Colors.white70),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class UnicornLoginNotice extends StatelessWidget {
+  final VoidCallback onLoginTap;
+
+  const UnicornLoginNotice({required this.onLoginTap, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withOpacity(0.22),
+                  Colors.white.withOpacity(0.10),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 20,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: Color(0xFFFDE047), size: 28),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Guest님, 로그인하고 학습 기록을 저장해보세요!',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 2,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: onLoginTap,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Color(0xFF8B5CF6),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.10),
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      'Login / Sign Up',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
