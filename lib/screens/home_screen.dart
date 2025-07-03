@@ -12,6 +12,7 @@ import 'package:Mathicorn/providers/wrong_note_provider.dart';
 import 'package:Mathicorn/providers/auth_provider.dart';
 import 'package:Mathicorn/widgets/login_required_dialog.dart';
 import 'package:Mathicorn/screens/main_shell.dart';
+import '../utils/unicorn_theme.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -58,84 +59,68 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context);
     return Scaffold(
-      body: Consumer<AuthProvider>(
-        builder: (context, auth, _) {
-          return Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF87CEEB), Color(0xFF98FB98)],
-              ),
-            ),
-            child: SafeArea(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 32),
-                      Column(
-                        children: [
-                          Image.asset(
-                            'assets/images/mathicorn.png',
-                            width: 120,
-                            height: 120,
-                            fit: BoxFit.contain,
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Mathicorn',
-                            style: TextStyle(
-                              fontSize: 36,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              shadows: [
-                                Shadow(
-                                  offset: Offset(2, 2),
-                                  blurRadius: 4,
-                                  color: Colors.black26,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      if (!auth.isLoggedIn)
-                        Container(
-                          color: Colors.yellow[100],
-                          padding: const EdgeInsets.all(8),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.info_outline),
-                              const SizedBox(width: 8),
-                              const Expanded(child: Text('Guest님, 로그인하고 학습 기록을 저장해보세요!')),
-                              TextButton(
-                                onPressed: () => Navigator.pushNamed(context, '/auth'),
-                                child: const Text('Login / Sign Up'),
-                              ),
-                            ],
-                          ),
+      backgroundColor: Colors.transparent,
+      body: Material(
+        color: Colors.transparent,
+        child: Container(
+          decoration: UnicornDecorations.appBackground,
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 32),
+                    Column(
+                      children: [
+                        Image.asset(
+                          'assets/images/mathicorn.png',
+                          width: 120,
+                          height: 120,
+                          fit: BoxFit.contain,
                         ),
-                      const SizedBox(height: 24),
-                      _buildAppBar(),
-                      const SizedBox(height: 24),
-                      _buildMainMenu(auth),
-                    ],
-                  ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Mathicorn',
+                          style: UnicornTextStyles.header.copyWith(fontSize: 36),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    if (!auth.isLoggedIn)
+                      Container(
+                        color: Colors.yellow[100],
+                        padding: const EdgeInsets.all(8),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.info_outline),
+                            const SizedBox(width: 8),
+                            const Expanded(child: Text('Guest님, 로그인하고 학습 기록을 저장해보세요!')),
+                            TextButton(
+                              onPressed: () => Navigator.pushNamed(context, '/auth'),
+                              child: const Text('Login / Sign Up'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    const SizedBox(height: 24),
+                    _buildAppBar(auth),
+                    const SizedBox(height: 24),
+                    _buildMainMenu(auth),
+                  ],
                 ),
               ),
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildAppBar() {
+  Widget _buildAppBar(AuthProvider auth) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
@@ -180,10 +165,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Row(
             children: [
               IconButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                ),
+                onPressed: () {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  MainShell.setTabIndex?.call(6);
+                },
                 icon: const Icon(Icons.settings, color: Colors.white, size: 28),
               ),
             ],
@@ -250,27 +235,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Container(
       width: double.infinity,
       height: 80,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withOpacity(0.25),
-            Colors.white.withOpacity(0.10),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.10),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-        // Glassmorphism effect: blur
-        // (Flutter does not support backdropFilter in BoxDecoration directly, so use ClipRRect+BackdropFilter in widget tree if needed)
-      ),
+      decoration: UnicornDecorations.cardGlass,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -297,17 +262,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: UnicornTextStyles.button.copyWith(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
-                          shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
                         ),
                       ),
                       Text(
                         subtitle,
-                        style: const TextStyle(
-                          fontSize: 14,
+                        style: UnicornTextStyles.body.copyWith(
                           color: Color(0xFFF8FAFC),
                           fontWeight: FontWeight.w500,
                         ),

@@ -4,6 +4,7 @@ import '../providers/statistics_provider.dart';
 import '../models/statistics.dart';
 import '../providers/auth_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../utils/unicorn_theme.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({Key? key}) : super(key: key);
@@ -43,69 +44,72 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           appBar: AppBar(
             title: const Text('\ud83d\udcca My Statistics'),
           ),
-          body: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF8ED6FB), // sky blue
-                  Color(0xFFA0EACF), // light green
-                ],
+          body: Material(
+            color: Colors.transparent,
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF8ED6FB), // sky blue
+                    Color(0xFFA0EACF), // light green
+                  ],
+                ),
               ),
-            ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // 상단 카드
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _StatCard(
-                        icon: Icons.psychology,
-                        label: 'Total Solved',
-                        value: '${stats.totalSolved} problems',
-                      ),
-                      _StatCard(
-                        icon: Icons.check_circle,
-                        label: 'Accuracy',
-                        value: '${stats.averageAccuracy.toStringAsFixed(1)}%',
-                      ),
-                      _StatCard(
-                        icon: Icons.timer,
-                        label: 'Avg. Time',
-                        value: '${stats.averageTimePerQuestion.toStringAsFixed(1)}s',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  // 일별 학습량 차트 (BarChart)
-                  _SectionTitle(title: '📈 Daily Activity'),
-                  SizedBox(
-                    height: 180,
-                    child: _DailyActivityBarChart(dailyActivity: stats.dailyActivity),
-                  ),
-                  const SizedBox(height: 16),
-                  // 연산별 정확도 차트 (PieChart)
-                  _SectionTitle(title: '📊 Operation Accuracy'),
-                  SizedBox(
-                    height: 140,
-                    child: _OperationAccuracyPieChart(
-                      operationAccuracy: stats.operationAccuracy,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // 상단 카드
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _StatCard(
+                          icon: Icons.psychology,
+                          label: 'Total Solved',
+                          value: '${stats.totalSolved} problems',
+                        ),
+                        _StatCard(
+                          icon: Icons.check_circle,
+                          label: 'Accuracy',
+                          value: '${stats.averageAccuracy.toStringAsFixed(1)}%',
+                        ),
+                        _StatCard(
+                          icon: Icons.timer,
+                          label: 'Avg. Time',
+                          value: '${stats.averageTimePerQuestion.toStringAsFixed(1)}s',
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  // 레벨별 정확도 차트 (LineChart)
-                  _SectionTitle(title: '🔢 Level Accuracy'),
-                  SizedBox(
-                    height: 140,
-                    child: _LevelAccuracyLineChart(
-                      levelAccuracy: stats.levelAccuracy,
+                    const SizedBox(height: 24),
+                    // 일별 학습량 차트 (BarChart)
+                    _SectionTitle(title: '📈 Daily Activity'),
+                    SizedBox(
+                      height: 180,
+                      child: _DailyActivityBarChart(dailyActivity: stats.dailyActivity),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    // 연산별 정확도 차트 (PieChart)
+                    _SectionTitle(title: '📊 Operation Accuracy'),
+                    SizedBox(
+                      height: 140,
+                      child: _OperationAccuracyPieChart(
+                        operationAccuracy: stats.operationAccuracy,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // 레벨별 정확도 차트 (LineChart)
+                    _SectionTitle(title: '🔢 Level Accuracy'),
+                    SizedBox(
+                      height: 140,
+                      child: _LevelAccuracyLineChart(
+                        levelAccuracy: stats.levelAccuracy,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

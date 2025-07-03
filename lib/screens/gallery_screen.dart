@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Mathicorn/providers/game_provider.dart';
+import '../utils/unicorn_theme.dart';
 
 class GalleryScreen extends StatelessWidget {
   const GalleryScreen({super.key});
@@ -8,58 +9,40 @@ class GalleryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gallery'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
+      backgroundColor: Colors.transparent,
+      body: Material(
+        color: Colors.transparent,
         child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withOpacity(0.25),
-                Colors.white.withOpacity(0.10),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.10),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Sticker Gallery',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+          decoration: UnicornDecorations.appBackground,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Container(
+                decoration: UnicornDecorations.cardGlass,
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Sticker Gallery',
+                      style: UnicornTextStyles.header,
+                    ),
+                    const SizedBox(height: 24),
+                    Consumer<GameProvider>(
+                      builder: (context, gameProvider, child) {
+                        final userProfile = gameProvider.userProfile;
+                        final stickers = userProfile?.collectedStickers ?? [];
+                        return Expanded(
+                          child: stickers.isEmpty
+                              ? _buildEmptyState(context)
+                              : _buildStickerGrid(stickers, context),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 24),
-              Consumer<GameProvider>(
-                builder: (context, gameProvider, child) {
-                  final userProfile = gameProvider.userProfile;
-                  final stickers = userProfile?.collectedStickers ?? [];
-                  
-                  return Expanded(
-                    child: stickers.isEmpty
-                        ? _buildEmptyState(context)
-                        : _buildStickerGrid(stickers, context),
-                  );
-                },
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -74,8 +57,9 @@ class GalleryScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
+              color: UnicornColors.white.withOpacity(0.8),
               shape: BoxShape.circle,
+              boxShadow: UnicornShadows.card,
             ),
             child: const Icon(
               Icons.emoji_emotions_outlined,
@@ -84,13 +68,9 @@ class GalleryScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'No stickers collected yet!',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+            style: UnicornTextStyles.header.copyWith(color: Colors.black87),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -106,14 +86,7 @@ class GalleryScreen extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.play_arrow),
             label: const Text('Start Game'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+            style: UnicornButtonStyles.primary,
           ),
         ],
       ),
@@ -137,8 +110,7 @@ class GalleryScreen extends StatelessWidget {
 
   Widget _buildStickerCard(String sticker, int index, BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
+      decoration: UnicornDecorations.cardGlass.copyWith(
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -188,13 +160,14 @@ class GalleryScreen extends StatelessWidget {
         ),
         child: Container(
           padding: const EdgeInsets.all(24),
+          decoration: UnicornDecorations.cardGlass,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: UnicornColors.orange.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Text(
@@ -205,11 +178,7 @@ class GalleryScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 'Sticker #${index + 1}',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+                style: UnicornTextStyles.header.copyWith(color: Colors.black87),
               ),
               const SizedBox(height: 8),
               const Text(
@@ -225,13 +194,7 @@ class GalleryScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(dialogContext),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+                  style: UnicornButtonStyles.primary,
                   child: const Text('OK'),
                 ),
               ),

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:Mathicorn/screens/home_screen.dart';
 import 'package:Mathicorn/screens/game_setup_screen.dart';
+import 'package:Mathicorn/screens/game_screen.dart';
 import 'package:Mathicorn/screens/wrong_note_screen.dart';
 import 'package:Mathicorn/screens/profile_screen.dart';
 import 'package:Mathicorn/screens/statistics_screen.dart';
 import 'package:Mathicorn/screens/settings_screen.dart';
+import 'package:Mathicorn/screens/auth_screen.dart';
 import 'package:Mathicorn/widgets/login_required_dialog.dart';
 import 'package:Mathicorn/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
+import '../utils/unicorn_theme.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -21,13 +24,15 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _selectedIndex = 0;
-  static const List<Widget> _screens = [
-    HomeScreen(),
-    GameSetupScreen(),
-    WrongNoteScreen(),
-    StatisticsScreen(),
-    ProfileScreen(),
-    SettingsScreen(),
+  static final List<Widget> _screens = [
+    HomeScreen(),         // 0
+    GameSetupScreen(),    // 1
+    GameScreen(),         // 2
+    WrongNoteScreen(),    // 3
+    StatisticsScreen(),   // 4
+    ProfileScreen(),      // 5
+    SettingsScreen(),     // 6
+    AuthScreen(),         // 7
   ];
 
   @override
@@ -48,12 +53,20 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     return Scaffold(
-      body: _screens[_selectedIndex],
+      backgroundColor: Colors.transparent,
+      body: Material(
+        color: Colors.transparent,
+        child: _screens[_selectedIndex],
+      ),
       bottomNavigationBar: NavigationBar(
         height: 70,
         selectedIndex: _selectedIndex,
+        backgroundColor: UnicornColors.white.withOpacity(0.7),
+        indicatorColor: UnicornColors.purple.withOpacity(0.15),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: (idx) async {
-          if ((idx == 2 || idx == 3 || idx == 4) && !auth.isLoggedIn) {
+          // Only allow navigation to AuthScreen if not logged in
+          if ((idx == 3 || idx == 4 || idx == 5) && !auth.isLoggedIn) {
             await showLoginRequiredDialog(context);
             return;
           }
@@ -68,6 +81,11 @@ class _MainShellState extends State<MainShell> {
           NavigationDestination(
             icon: Icon(Icons.play_arrow_outlined),
             selectedIcon: Icon(Icons.play_arrow),
+            label: 'Game Setup',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.videogame_asset_outlined),
+            selectedIcon: Icon(Icons.videogame_asset),
             label: 'Game',
           ),
           NavigationDestination(
@@ -90,10 +108,12 @@ class _MainShellState extends State<MainShell> {
             selectedIcon: Icon(Icons.settings),
             label: 'Settings',
           ),
+          NavigationDestination(
+            icon: Icon(Icons.login),
+            selectedIcon: Icon(Icons.login),
+            label: 'Auth',
+          ),
         ],
-        backgroundColor: Color(0xFFF3E5F5),
-        indicatorColor: Color(0xFFB388FF).withOpacity(0.15),
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       ),
     );
   }

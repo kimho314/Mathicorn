@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Mathicorn/providers/settings_provider.dart';
+import '../utils/unicorn_theme.dart';
+import 'main_shell.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -20,54 +22,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF8ED6FB), // sky blue
-              Color(0xFFA0EACF), // light green
+    return Container(
+      decoration: UnicornDecorations.appBackground,
+      child: Consumer<SettingsProvider>(
+        builder: (context, settingsProvider, child) {
+          return ListView(
+            padding: const EdgeInsets.all(20.0),
+            children: [
+              // Sound Settings
+              _buildSettingCard(
+                title: '🔊 Sound Settings',
+                children: [
+                  _buildSwitchTile(
+                    title: 'Sound Effects',
+                    subtitle: 'Play sound effects for correct/wrong answers',
+                    value: settingsProvider.soundEnabled,
+                    onChanged: (value) {
+                      settingsProvider.setSoundEnabled(value);
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Language Settings
+              _buildSettingCard(
+                title: '🌍 Language Settings',
+                children: [
+                  _buildLanguageSelector(settingsProvider),
+                ],
+              ),
             ],
-          ),
-        ),
-        child: Consumer<SettingsProvider>(
-          builder: (context, settingsProvider, child) {
-            return ListView(
-              padding: const EdgeInsets.all(20.0),
-              children: [
-                // Sound Settings
-                _buildSettingCard(
-                  title: '🔊 Sound Settings',
-                  children: [
-                    _buildSwitchTile(
-                      title: 'Sound Effects',
-                      subtitle: 'Play sound effects for correct/wrong answers',
-                      value: settingsProvider.soundEnabled,
-                      onChanged: (value) {
-                        settingsProvider.setSoundEnabled(value);
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                // Language Settings
-                _buildSettingCard(
-                  title: '🌍 Language Settings',
-                  children: [
-                    _buildLanguageSelector(settingsProvider),
-                  ],
-                ),
-              ],
-            );
-          },
-        ),
+          );
+        },
       ),
     );
   }
@@ -76,34 +62,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String title,
     required List<Widget> children,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+    return Material(
+      color: Colors.white.withOpacity(0.95),
+      borderRadius: BorderRadius.circular(16),
+      elevation: 2,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
             ),
-          ),
-          ...children,
-        ],
+            ...children,
+          ],
+        ),
       ),
     );
   }

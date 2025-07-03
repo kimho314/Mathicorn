@@ -4,6 +4,7 @@ import 'package:Mathicorn/providers/game_provider.dart';
 import 'package:Mathicorn/models/user_profile.dart';
 import 'package:Mathicorn/providers/auth_provider.dart';
 import 'package:Mathicorn/screens/main_shell.dart';
+import '../utils/unicorn_theme.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -74,48 +75,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF8ED6FB), // sky blue
-              Color(0xFFA0EACF), // light green
-            ],
+      body: Material(
+        color: Colors.transparent,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF8ED6FB), // sky blue
+                Color(0xFFA0EACF), // light green
+              ],
+            ),
           ),
-        ),
-        child: Consumer<GameProvider>(
-          builder: (context, gameProvider, child) {
-            // Consumer에서 최신 프로필 정보 가져오기
-            final userProfile = gameProvider.userProfile;
-            
-            // 프로필 정보가 변경되면 로컬 상태 업데이트
-            if (userProfile != null && _nameController.text != userProfile.name) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _loadUserProfile();
-              });
-            }
-            
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                children: [
-                  // 프로필 카드
-                  _buildProfileCard(userProfile),
-                  const SizedBox(height: 24),
-                  
-                  // 통계 카드
-                  _buildStatsCard(userProfile),
-                  const SizedBox(height: 24),
-                  
-                  // 스티커 갤러리
-                  _buildStickerGallery(userProfile),
-                  const SizedBox(height: 20), // 하단 여백 추가
-                ],
-              ),
-            );
-          },
+          child: Consumer<GameProvider>(
+            builder: (context, gameProvider, child) {
+              // Consumer에서 최신 프로필 정보 가져오기
+              final userProfile = gameProvider.userProfile;
+              
+              // 프로필 정보가 변경되면 로컬 상태 업데이트
+              if (userProfile != null && _nameController.text != userProfile.name) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _loadUserProfile();
+                });
+              }
+              
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    // 프로필 카드
+                    _buildProfileCard(userProfile),
+                    const SizedBox(height: 24),
+                    
+                    // 통계 카드
+                    _buildStatsCard(userProfile),
+                    const SizedBox(height: 24),
+                    
+                    // 스티커 갤러리
+                    _buildStickerGallery(userProfile),
+                    const SizedBox(height: 20), // 하단 여백 추가
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );

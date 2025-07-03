@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/wrong_note_provider.dart';
 import '../models/wrong_answer.dart';
+import '../utils/unicorn_theme.dart';
 
 class WrongNoteScreen extends StatefulWidget {
   const WrongNoteScreen({Key? key}) : super(key: key);
@@ -55,105 +56,108 @@ class _WrongNoteScreenState extends State<WrongNoteScreen> {
           ),
         ],
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF8ED6FB), // sky blue
-              Color(0xFFA0EACF), // light green
-            ],
+      body: Material(
+        color: Colors.transparent,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF8ED6FB), // sky blue
+                Color(0xFFA0EACF), // light green
+              ],
+            ),
           ),
-        ),
-        child: Consumer<WrongNoteProvider>(
-          builder: (context, provider, child) {
-            List<WrongAnswer> filtered = provider.filter(
-              type: _selectedType,
-              level: _selectedLevel,
-              from: _fromDate,
-              to: _toDate,
-            );
-            if (_reviewMode) {
-              filtered = provider.getForReview(random: _randomOrder);
-            }
-            return Column(
-              children: [
-                _buildFilterBar(provider),
-                if (filtered.isEmpty)
-                  const Expanded(child: Center(child: Text('No wrong answers found.')))
-                else
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: filtered.length,
-                      itemBuilder: (context, idx) {
-                        final wa = filtered[idx];
-                        return Card(
-                          color: wa.isFlagged ? Colors.red[50] : null,
-                          child: ListTile(
-                            leading: Icon(_getTypeIcon(wa.type)),
-                            title: Text(wa.question),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Your answer: ${wa.userAnswer}'),
-                                Text('Correct answer: ${wa.correctAnswer}'),
-                                Text('Type: ${wa.type}, Level: ${wa.level}'),
-                                Text('Time: ${wa.timestamp.toLocal()}'),
-                                if (wa.isFlagged)
-                                  const Text('Flagged as difficult', style: TextStyle(color: Colors.red)),
-                              ],
+          child: Consumer<WrongNoteProvider>(
+            builder: (context, provider, child) {
+              List<WrongAnswer> filtered = provider.filter(
+                type: _selectedType,
+                level: _selectedLevel,
+                from: _fromDate,
+                to: _toDate,
+              );
+              if (_reviewMode) {
+                filtered = provider.getForReview(random: _randomOrder);
+              }
+              return Column(
+                children: [
+                  _buildFilterBar(provider),
+                  if (filtered.isEmpty)
+                    const Expanded(child: Center(child: Text('No wrong answers found.')))
+                  else
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: filtered.length,
+                        itemBuilder: (context, idx) {
+                          final wa = filtered[idx];
+                          return Card(
+                            color: wa.isFlagged ? Colors.red[50] : null,
+                            child: ListTile(
+                              leading: Icon(_getTypeIcon(wa.type)),
+                              title: Text(wa.question),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Your answer: ${wa.userAnswer}'),
+                                  Text('Correct answer: ${wa.correctAnswer}'),
+                                  Text('Type: ${wa.type}, Level: ${wa.level}'),
+                                  Text('Time: ${wa.timestamp.toLocal()}'),
+                                  if (wa.isFlagged)
+                                    const Text('Flagged as difficult', style: TextStyle(color: Colors.red)),
+                                ],
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => provider.removeWrongAnswer(wa.problemId),
+                              ),
+                              onTap: () {
+                                // TODO: 해설 보기/복습 모드 진입 등
+                              },
                             ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () => provider.removeWrongAnswer(wa.problemId),
-                            ),
-                            onTap: () {
-                              // TODO: 해설 보기/복습 모드 진입 등
-                            },
+                          );
+                        },
+                      ),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Row(
+                      children: [
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Review Mode'),
+                          onPressed: filtered.isEmpty
+                              ? null
+                              : () {
+                                  setState(() {
+                                    _reviewMode = !_reviewMode;
+                                  });
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _reviewMode ? Colors.orange : null,
                           ),
-                        );
-                      },
+                        ),
+                        const SizedBox(width: 12),
+                        if (_reviewMode)
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.shuffle),
+                            label: const Text('Random Order'),
+                            onPressed: () {
+                              setState(() {
+                                _randomOrder = !_randomOrder;
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _randomOrder ? Colors.blue : null,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Row(
-                    children: [
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Review Mode'),
-                        onPressed: filtered.isEmpty
-                            ? null
-                            : () {
-                                setState(() {
-                                  _reviewMode = !_reviewMode;
-                                });
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _reviewMode ? Colors.orange : null,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      if (_reviewMode)
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.shuffle),
-                          label: const Text('Random Order'),
-                          onPressed: () {
-                            setState(() {
-                              _randomOrder = !_randomOrder;
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _randomOrder ? Colors.blue : null,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

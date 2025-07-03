@@ -10,6 +10,8 @@ import 'package:lottie/lottie.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../providers/statistics_provider.dart';
 import '../providers/auth_provider.dart';
+import '../utils/unicorn_theme.dart';
+import 'package:Mathicorn/screens/main_shell.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -95,28 +97,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF8ED6FB), // sky blue
-              Color(0xFFA0EACF), // light green
-            ],
-          ),
-        ),
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        decoration: UnicornDecorations.appBackground,
         child: SafeArea(
           child: Consumer<GameProvider>(
             builder: (context, gameProvider, child) {
               if (!gameProvider.isGameActive) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ResultScreen()),
-                  );
+                  MainShell.setTabIndex?.call(0); // 홈으로 이동
                 });
                 return const Center(child: CircularProgressIndicator());
               }
@@ -129,11 +119,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('게임을 시작할 수 없습니다. 다시 시도해주세요.')),
                     );
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomeScreen()),
-                      (route) => false,
-                    );
+                    MainShell.setTabIndex?.call(0); // 홈으로 이동
                   }
                 });
                 return const Center(child: CircularProgressIndicator());
@@ -152,16 +138,19 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               return SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildProgressBar(gameProvider),
-                      if (_showingCongratulations)
-                        _buildCongratulationsMessage(),
-                      _buildQuestionDisplay(currentProblem),
-                      const SizedBox(height: 40),
-                      _buildAnswerChoices(currentProblem, gameProvider),
-                    ],
+                  child: Container(
+                    decoration: UnicornDecorations.cardGlass,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildProgressBar(gameProvider),
+                        if (_showingCongratulations)
+                          _buildCongratulationsMessage(),
+                        _buildQuestionDisplay(currentProblem),
+                        const SizedBox(height: 40),
+                        _buildAnswerChoices(currentProblem, gameProvider),
+                      ],
+                    ),
                   ),
                 ),
               );

@@ -33,9 +33,3 @@ flutter:
     - assets/images/mathicorn.png
     - assets/animations/
     - .env
-  fonts:
-    - family: NotoSansKR
-      fonts:
-        - asset: assets/fonts/NotoSansKR-Regular.otf
-        - asset: assets/fonts/NotoSansKR-Bold.otf
-          weight: 700

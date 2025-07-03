@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:Mathicorn/providers/game_provider.dart';
 import 'package:Mathicorn/models/math_problem.dart';
 import 'package:Mathicorn/screens/game_screen.dart';
+import '../utils/unicorn_theme.dart';
+import '../screens/main_shell.dart';
 
 class GameSetupScreen extends StatefulWidget {
   const GameSetupScreen({super.key});
@@ -25,74 +27,33 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
         elevation: 0,
         title: const Text('Game Setup'),
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF87CEEB), // sky blue
-                Color(0xFF98FB98), // light green
-              ],
-            ),
-          ),
+          decoration: UnicornDecorations.appBackground,
         ),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF87CEEB), // sky blue (same as home screen)
-              Color(0xFF98FB98), // light green (same as home screen)
-            ],
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: SingleChildScrollView(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withOpacity(0.25),
-                    Colors.white.withOpacity(0.10),
+      body: Material(
+        color: Colors.transparent,
+        child: Container(
+          decoration: UnicornDecorations.appBackground,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: SingleChildScrollView(
+              child: Container(
+                decoration: UnicornDecorations.cardGlass,
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Game Settings', style: UnicornTextStyles.header),
+                    const SizedBox(height: 24),
+                    _buildProblemCountSection(),
+                    const SizedBox(height: 30),
+                    _buildLevelSelectionSection(),
+                    const SizedBox(height: 30),
+                    _buildOperationSelectionSection(),
+                    const SizedBox(height: 30),
+                    _buildStartButtonWithGuide(),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.10),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Game Settings',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  _buildProblemCountSection(),
-                  const SizedBox(height: 30),
-                  _buildLevelSelectionSection(),
-                  const SizedBox(height: 30),
-                  _buildOperationSelectionSection(),
-                  const SizedBox(height: 30),
-                  _buildStartButtonWithGuide(),
-                ],
               ),
             ),
           ),
@@ -551,9 +512,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
     );
     gameProvider.startGame();
     
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const GameScreen()),
-    );
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    MainShell.setTabIndex?.call(2);
   }
 } 
