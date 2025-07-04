@@ -93,7 +93,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     const SizedBox(height: 16),
                     if (!auth.isLoggedIn)
                       UnicornLoginNotice(
-                        onLoginTap: () => Navigator.pushNamed(context, '/auth'),
+                        onLoginTap: () {
+                          Navigator.of(context).popUntil((route) => route.isFirst);
+                          MainShell.setTabIndex?.call(7);
+                        },
                       ),
                     const SizedBox(height: 24),
                     _buildAppBar(auth),
