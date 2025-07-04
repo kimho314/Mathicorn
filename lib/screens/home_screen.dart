@@ -320,7 +320,7 @@ class UnicornLoginNotice extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Guest님, 로그인하고 학습 기록을 저장해보세요!',
+                    'Guest, log in to save your learning history!',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
