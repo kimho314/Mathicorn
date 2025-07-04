@@ -104,7 +104,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         child: SafeArea(
           child: Consumer<GameProvider>(
             builder: (context, gameProvider, child) {
-              if (!gameProvider.isGameActive) {
+              final isResultScreen = ModalRoute.of(context)?.settings.name == 'ResultScreen';
+              final isCurrent = ModalRoute.of(context)?.isCurrent ?? true;
+              if (!gameProvider.isGameActive && !isResultScreen && isCurrent) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   MainShell.setTabIndex?.call(0); // 홈으로 이동
                 });
@@ -112,7 +114,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               }
 
               final currentProblem = gameProvider.currentProblem;
-              if (currentProblem == null) {
+              if (currentProblem == null && !isResultScreen && isCurrent) {
                 // 문제가 없으면 홈으로 돌아가기 (빌드 완료 후 실행)
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (mounted) {
@@ -146,9 +148,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         _buildProgressBar(gameProvider),
                         if (_showingCongratulations)
                           _buildCongratulationsMessage(),
-                        _buildQuestionDisplay(currentProblem),
-                        const SizedBox(height: 40),
-                        _buildAnswerChoices(currentProblem, gameProvider),
+                        if (currentProblem != null) ...[
+                          _buildQuestionDisplay(currentProblem),
+                          const SizedBox(height: 40),
+                          _buildAnswerChoices(currentProblem, gameProvider),
+                        ],
                       ],
                     ),
                   ),
@@ -507,7 +511,30 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _audioPlayer.stop();
     // GameProvider에서 다음 문제로 이동
     final gameProvider = context.read<GameProvider>();
+    final wasLastProblem = gameProvider.currentProblemIndex + 1 >= gameProvider.totalProblems;
     gameProvider.moveToNextProblem();
+    
+    // 게임이 끝났으면 결과 화면으로 이동
+    if (wasLastProblem) {
+      final correctAnswers = gameProvider.correctAnswers;
+      final totalProblems = gameProvider.totalProblems;
+      final duration = gameProvider.gameDuration;
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => ResultScreen(
+                correctAnswers: correctAnswers,
+                totalProblems: totalProblems,
+                duration: duration,
+              ),
+              settings: const RouteSettings(name: 'ResultScreen'),
+            ),
+          );
+        }
+      });
+      return;
+    }
     
     // 모든 상태 완전 초기화
     setState(() {

@@ -5,6 +5,8 @@ import 'package:Mathicorn/models/math_problem.dart';
 import 'package:Mathicorn/models/user_profile.dart';
 import 'package:Mathicorn/models/wrong_answer.dart';
 import 'package:Mathicorn/providers/wrong_note_provider.dart';
+import 'package:uuid/uuid.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GameProvider extends ChangeNotifier {
   UserProfile? _userProfile;
@@ -456,26 +458,23 @@ class GameProvider extends ChangeNotifier {
       _correctAnswers++;
     } else {
       // 오답 기록 저장
-      if (wrongNoteProvider != null) {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (wrongNoteProvider != null && userId != null) {
         final wrongAnswer = WrongAnswer(
-          problemId: _generateProblemId(),
-          question: currentProblem.questionText,
+          id: const Uuid().v4(),
+          userId: userId,
+          questionText: currentProblem.questionText,
           userAnswer: selectedAnswer.toString(),
           correctAnswer: currentProblem.correctAnswer.toString(),
-          timestamp: DateTime.now(),
-          type: currentProblem.operationText,
-          level: currentProblem.level != null ? currentProblem.level!.index + 1 : 0,
+          operationType: currentProblem.operationText,
+          level: currentProblem.level != null ? currentProblem.level!.index + 1 : null,
+          createdAt: DateTime.now(),
         );
         wrongNoteProvider!.addWrongAnswer(wrongAnswer);
       }
     }
     notifyListeners();
     return isCorrect;
-  }
-
-  String _generateProblemId() {
-    final now = DateTime.now();
-    return 'Q${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}-${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}';
   }
 
   // 오답 후 다시 시도할 때 호출

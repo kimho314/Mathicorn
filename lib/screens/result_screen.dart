@@ -6,7 +6,10 @@ import 'package:Mathicorn/screens/game_setup_screen.dart';
 import '../utils/unicorn_theme.dart';
 
 class ResultScreen extends StatefulWidget {
-  const ResultScreen({super.key});
+  final int correctAnswers;
+  final int totalProblems;
+  final Duration? duration;
+  const ResultScreen({required this.correctAnswers, required this.totalProblems, this.duration, Key? key}) : super(key: key);
 
   @override
   State<ResultScreen> createState() => _ResultScreenState();
@@ -102,75 +105,54 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                   ),
                 ),
                 const SizedBox(height: 24),
-                Consumer<GameProvider>(
-                  builder: (context, gameProvider, child) {
-                    final correctAnswers = gameProvider.correctAnswers;
-                    final totalProblems = gameProvider.totalProblems;
+                Builder(
+                  builder: (context) {
+                    final correctAnswers = widget.correctAnswers;
+                    final totalProblems = widget.totalProblems;
                     final score = (correctAnswers / totalProblems * 100).round();
-                    final duration = gameProvider.gameDuration;
-
-                    return Column(
-                      children: [
-                        // 메인 결과 콘텐츠 (스크롤 가능)
-                        Expanded(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                            child: AnimatedBuilder(
-                              animation: _animationController,
-                              builder: (context, child) {
-                                return Transform.scale(
-                                  scale: _scaleAnimation.value,
-                                  child: Opacity(
-                                    opacity: _fadeAnimation.value,
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        // 고양이 애니메이션 (90점 이상일 때 표시)
-                                        if (score >= 90) _buildDancingCat(),
-                                        
-                                        // 결과 이모지 (90점 미만일 때만 표시)
-                                        if (score < 90) _buildResultEmoji(score),
-                                        
-                                        // 90점 이상일 때 메시지 표시
-                                        if (score >= 90) ...[
-                                          const SizedBox(height: 16),
-                                          Text(
-                                            'Perfect!',
-                                            style: const TextStyle(
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                        ],
-                                        const SizedBox(height: 24),
-                                        
-                                        // 점수 표시
-                                        _buildScoreDisplay(score, correctAnswers, totalProblems),
-                                        const SizedBox(height: 32),
-                                        
-                                        // 시간 표시
-                                        if (duration != null) ...[
-                                          _buildTimeDisplay(duration),
-                                          const SizedBox(height: 32),
-                                        ],
-                                        
-                                        // 보상 표시
-                                        _buildRewardDisplay(score),
-                                        const SizedBox(height: 40),
-                                        
-                                        // 액션 버튼들
-                                        _buildActionButtons(),
-                                        const SizedBox(height: 40), // 하단 여백 추가
-                                      ],
+                    final duration = widget.duration;
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: AnimatedBuilder(
+                        animation: _animationController,
+                        builder: (context, child) {
+                          return Transform.scale(
+                            scale: _scaleAnimation.value,
+                            child: Opacity(
+                              opacity: _fadeAnimation.value,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (score >= 90) _buildDancingCat(),
+                                  if (score < 90) _buildResultEmoji(score),
+                                  if (score >= 90) ...[
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Perfect!',
+                                      style: const TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
+                                  ],
+                                  const SizedBox(height: 24),
+                                  _buildScoreDisplay(score, correctAnswers, totalProblems),
+                                  const SizedBox(height: 32),
+                                  if (duration != null) ...[
+                                    _buildTimeDisplay(duration),
+                                    const SizedBox(height: 32),
+                                  ],
+                                  _buildRewardDisplay(score),
+                                  const SizedBox(height: 40),
+                                  _buildActionButtons(),
+                                  const SizedBox(height: 40),
+                                ],
+                              ),
                             ),
-                          ),
-                        ),
-                      ],
+                          );
+                        },
+                      ),
                     );
                   },
                 ),

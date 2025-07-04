@@ -194,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               await showLoginRequiredDialog(context);
             } else {
               Navigator.of(context).popUntil((route) => route.isFirst);
-              MainShell.setTabIndex?.call(2);
+              MainShell.setTabIndex?.call(3);
             }
           },
         ),

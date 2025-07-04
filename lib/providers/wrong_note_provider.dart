@@ -19,16 +19,7 @@ class WrongNoteProvider extends ChangeNotifier {
         .eq('user_id', userId!)
         .order('created_at', ascending: false);
     _wrongAnswers = (response as List)
-        .map((e) => WrongAnswer.fromJson({
-              'problemId': e['problem_id'],
-              'question': e['question'],
-              'userAnswer': e['user_answer'],
-              'correctAnswer': e['correct_answer'],
-              'timestamp': e['created_at'],
-              'type': e['type'],
-              'level': e['level'],
-              'isFlagged': e['is_flagged'] ?? false,
-            }))
+        .map((e) => WrongAnswer.fromJson(e))
         .toList();
     notifyListeners();
   }
@@ -36,26 +27,17 @@ class WrongNoteProvider extends ChangeNotifier {
   Future<void> addWrongAnswer(WrongAnswer answer) async {
     if (userId == null) return;
     final supabase = Supabase.instance.client;
-    await supabase.from(tableName).insert({
-      'user_id': userId!,
-      'problem_id': answer.problemId,
-      'question': answer.question,
-      'user_answer': answer.userAnswer,
-      'correct_answer': answer.correctAnswer,
-      'type': answer.type,
-      'level': answer.level,
-      'is_flagged': answer.isFlagged,
-    });
+    await supabase.from(tableName).insert(answer.toJson());
     await loadWrongAnswers();
   }
 
-  Future<void> removeWrongAnswer(String problemId) async {
+  Future<void> removeWrongAnswer(String id) async {
     if (userId == null) return;
     final supabase = Supabase.instance.client;
     await supabase.from(tableName)
         .delete()
         .eq('user_id', userId!)
-        .eq('problem_id', problemId);
+        .eq('id', id);
     await loadWrongAnswers();
   }
 
@@ -69,12 +51,12 @@ class WrongNoteProvider extends ChangeNotifier {
   }
 
   // 필터링 기능
-  List<WrongAnswer> filter({String? type, int? level, DateTime? from, DateTime? to}) {
+  List<WrongAnswer> filter({String? operationType, int? level, DateTime? from, DateTime? to}) {
     return _wrongAnswers.where((a) {
-      if (type != null && a.type != type) return false;
+      if (operationType != null && a.operationType != operationType) return false;
       if (level != null && a.level != level) return false;
-      if (from != null && a.timestamp.isBefore(from)) return false;
-      if (to != null && a.timestamp.isAfter(to)) return false;
+      if (from != null && (a.createdAt == null || a.createdAt!.isBefore(from))) return false;
+      if (to != null && (a.createdAt == null || a.createdAt!.isAfter(to))) return false;
       return true;
     }).toList();
   }
@@ -85,7 +67,7 @@ class WrongNoteProvider extends ChangeNotifier {
     if (random) {
       list.shuffle();
     } else {
-      list.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      list.sort((a, b) => (a.createdAt ?? DateTime(0)).compareTo(b.createdAt ?? DateTime(0)));
     }
     return list;
   }

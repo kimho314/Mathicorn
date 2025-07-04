@@ -72,7 +72,7 @@ class _WrongNoteScreenState extends State<WrongNoteScreen> {
           child: Consumer<WrongNoteProvider>(
             builder: (context, provider, child) {
               List<WrongAnswer> filtered = provider.filter(
-                type: _selectedType,
+                operationType: _selectedType,
                 level: _selectedLevel,
                 from: _fromDate,
                 to: _toDate,
@@ -92,24 +92,24 @@ class _WrongNoteScreenState extends State<WrongNoteScreen> {
                         itemBuilder: (context, idx) {
                           final wa = filtered[idx];
                           return Card(
-                            color: wa.isFlagged ? Colors.red[50] : null,
                             child: ListTile(
-                              leading: Icon(_getTypeIcon(wa.type)),
-                              title: Text(wa.question),
+                              leading: Icon(_getTypeIcon(wa.operationType ?? '')),
+                              title: Text(wa.questionText),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text('Your answer: ${wa.userAnswer}'),
                                   Text('Correct answer: ${wa.correctAnswer}'),
-                                  Text('Type: ${wa.type}, Level: ${wa.level}'),
-                                  Text('Time: ${wa.timestamp.toLocal()}'),
-                                  if (wa.isFlagged)
-                                    const Text('Flagged as difficult', style: TextStyle(color: Colors.red)),
+                                  Text('Type: ${wa.operationType ?? '-'}, Level: ${wa.level ?? '-'}'),
+                                  if (wa.createdAt != null)
+                                    Text('Time: ${wa.createdAt!.toLocal()}'),
                                 ],
                               ),
                               trailing: IconButton(
                                 icon: const Icon(Icons.delete),
-                                onPressed: () => provider.removeWrongAnswer(wa.problemId),
+                                onPressed: () {
+                                  provider.removeWrongAnswer(wa.id);
+                                },
                               ),
                               onTap: () {
                                 // TODO: 해설 보기/복습 모드 진입 등

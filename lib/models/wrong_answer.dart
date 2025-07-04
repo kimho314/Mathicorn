@@ -1,46 +1,46 @@
 import 'dart:convert';
 
 class WrongAnswer {
-  final String problemId;
-  final String question;
+  final String id;
+  final String userId;
+  final String questionText;
   final String userAnswer;
   final String correctAnswer;
-  final DateTime timestamp;
-  final String type; // 덧셈, 뺄셈, 곱셈, 나눗셈, 혼합 등
-  final int level;
-  final bool isFlagged;
+  final String? operationType;
+  final int? level;
+  final DateTime? createdAt;
 
   WrongAnswer({
-    required this.problemId,
-    required this.question,
+    required this.id,
+    required this.userId,
+    required this.questionText,
     required this.userAnswer,
     required this.correctAnswer,
-    required this.timestamp,
-    required this.type,
-    required this.level,
-    this.isFlagged = false,
+    this.operationType,
+    this.level,
+    this.createdAt,
   });
 
   Map<String, dynamic> toJson() => {
-    'problemId': problemId,
-    'question': question,
-    'userAnswer': userAnswer,
-    'correctAnswer': correctAnswer,
-    'created_at': timestamp.toIso8601String(),
-    'type': type,
+    'id': id,
+    'user_id': userId,
+    'question_text': questionText,
+    'user_answer': userAnswer,
+    'correct_answer': correctAnswer,
+    'operation_type': operationType,
     'level': level,
-    'isFlagged': isFlagged,
+    'created_at': createdAt?.toIso8601String(),
   };
 
   factory WrongAnswer.fromJson(Map<String, dynamic> json) => WrongAnswer(
-    problemId: json['problemId'],
-    question: json['question'],
-    userAnswer: json['userAnswer'],
-    correctAnswer: json['correctAnswer'],
-    timestamp: DateTime.parse(json['created_at']),
-    type: json['type'],
+    id: json['id'],
+    userId: json['user_id'],
+    questionText: json['question_text'],
+    userAnswer: json['user_answer'],
+    correctAnswer: json['correct_answer'],
+    operationType: json['operation_type'],
     level: json['level'],
-    isFlagged: json['isFlagged'] ?? false,
+    createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
   );
 
   static List<WrongAnswer> listFromJson(String jsonStr) {
