@@ -7,6 +7,7 @@ import 'package:Mathicorn/screens/profile_screen.dart';
 import 'package:Mathicorn/screens/statistics_screen.dart';
 import 'package:Mathicorn/screens/settings_screen.dart';
 import 'package:Mathicorn/screens/auth_screen.dart';
+import 'package:Mathicorn/screens/result_screen.dart';
 import 'package:Mathicorn/widgets/login_required_dialog.dart';
 import 'package:Mathicorn/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
@@ -18,12 +19,18 @@ class MainShell extends StatefulWidget {
   // 외부에서 탭 인덱스 변경을 위한 static 콜백
   static void Function(int)? setTabIndex;
 
+  static void Function(int, int, Duration?)? showResultScreen;
+
   @override
   State<MainShell> createState() => _MainShellState();
 }
 
 class _MainShellState extends State<MainShell> {
   int _selectedIndex = 0;
+  Map<String, dynamic>? _resultScreenData;
+
+  static _MainShellState? _instance;
+
   static final List<Widget> _screens = [
     HomeScreen(),         // 0
     GameSetupScreen(),    // 1
@@ -38,14 +45,28 @@ class _MainShellState extends State<MainShell> {
   @override
   void initState() {
     super.initState();
+    _instance = this;
     MainShell.setTabIndex = (int idx) {
       if (mounted) setState(() => _selectedIndex = idx);
+    };
+    MainShell.showResultScreen = (int correctAnswers, int totalProblems, Duration? duration) {
+      if (_instance != null && _instance!.mounted) {
+        _instance!.setState(() {
+          _instance!._resultScreenData = {
+            'correctAnswers': correctAnswers,
+            'totalProblems': totalProblems,
+            'duration': duration,
+          };
+        });
+      }
     };
   }
 
   @override
   void dispose() {
     MainShell.setTabIndex = null;
+    MainShell.showResultScreen = null;
+    _instance = null;
     super.dispose();
   }
 
@@ -110,7 +131,16 @@ class _MainShellState extends State<MainShell> {
       backgroundColor: Colors.transparent,
       body: Material(
         color: Colors.transparent,
-        child: _screens[_selectedIndex],
+        child: _resultScreenData != null
+            ? ResultScreen(
+                correctAnswers: _resultScreenData!['correctAnswers'],
+                totalProblems: _resultScreenData!['totalProblems'],
+                duration: _resultScreenData!['duration'],
+                onClose: () {
+                  setState(() => _resultScreenData = null);
+                },
+              )
+            : _screens[_selectedIndex],
       ),
       bottomNavigationBar: NavigationBar(
         height: 70,

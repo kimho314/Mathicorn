@@ -9,7 +9,8 @@ class ResultScreen extends StatefulWidget {
   final int correctAnswers;
   final int totalProblems;
   final Duration? duration;
-  const ResultScreen({required this.correctAnswers, required this.totalProblems, this.duration, Key? key}) : super(key: key);
+  final VoidCallback? onClose;
+  const ResultScreen({required this.correctAnswers, required this.totalProblems, this.duration, Key? key, this.onClose}) : super(key: key);
 
   @override
   State<ResultScreen> createState() => _ResultScreenState();
@@ -66,6 +67,12 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     return Scaffold(
       appBar: AppBar(
         title: const Text('Result'),
+        leading: widget.onClose != null
+            ? IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: widget.onClose,
+              )
+            : null,
       ),
       body: Material(
         color: Colors.transparent,
@@ -92,71 +99,65 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
               ],
             ),
             padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Game Result',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Builder(
-                  builder: (context) {
-                    final correctAnswers = widget.correctAnswers;
-                    final totalProblems = widget.totalProblems;
-                    final score = (correctAnswers / totalProblems * 100).round();
-                    final duration = widget.duration;
-                    return SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: AnimatedBuilder(
-                        animation: _animationController,
-                        builder: (context, child) {
-                          return Transform.scale(
-                            scale: _scaleAnimation.value,
-                            child: Opacity(
-                              opacity: _fadeAnimation.value,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  if (score >= 90) _buildDancingCat(),
-                                  if (score < 90) _buildResultEmoji(score),
-                                  if (score >= 90) ...[
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'Perfect!',
-                                      style: const TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  ],
-                                  const SizedBox(height: 24),
-                                  _buildScoreDisplay(score, correctAnswers, totalProblems),
-                                  const SizedBox(height: 32),
-                                  if (duration != null) ...[
-                                    _buildTimeDisplay(duration),
-                                    const SizedBox(height: 32),
-                                  ],
-                                  _buildRewardDisplay(score),
-                                  const SizedBox(height: 40),
-                                  _buildActionButtons(),
-                                  const SizedBox(height: 40),
-                                ],
+            child: SingleChildScrollView(
+              child: Builder(
+                builder: (context) {
+                  final correctAnswers = widget.correctAnswers;
+                  final totalProblems = widget.totalProblems;
+                  final score = (correctAnswers / totalProblems * 100).round();
+                  final duration = widget.duration;
+                  return AnimatedBuilder(
+                    animation: _animationController,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: _scaleAnimation.value,
+                        child: Opacity(
+                          opacity: _fadeAnimation.value,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Game Result',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ],
+                              const SizedBox(height: 24),
+                              if (score >= 90) _buildDancingCat(),
+                              if (score < 90) _buildResultEmoji(score),
+                              if (score >= 90) ...[
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Perfect!',
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 24),
+                              _buildScoreDisplay(score, correctAnswers, totalProblems),
+                              const SizedBox(height: 32),
+                              if (duration != null) ...[
+                                _buildTimeDisplay(duration),
+                                const SizedBox(height: 32),
+                              ],
+                              _buildRewardDisplay(score),
+                              const SizedBox(height: 40),
+                              _buildActionButtons(),
+                              const SizedBox(height: 40),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -325,11 +326,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
           width: double.infinity,
           height: 56,
           child: ElevatedButton(
-            onPressed: () => Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const GameSetupScreen()),
-              (route) => false,
-            ),
+            onPressed: widget.onClose ?? () {},
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
               foregroundColor: Colors.white,
@@ -338,7 +335,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
               ),
             ),
             child: const Text(
-              'Try Again',
+              'Back',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -351,11 +348,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
           width: double.infinity,
           height: 56,
           child: OutlinedButton(
-            onPressed: () => Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
-              (route) => false,
-            ),
+            onPressed: widget.onClose ?? () {},
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.blue,
               side: const BorderSide(color: Colors.blue),

@@ -129,7 +129,11 @@ class _LoginFormState extends State<_LoginForm> {
               setState(() { _loading = true; _error = null; });
               final err = await auth.signIn(_email.text, _pw.text);
               setState(() { _loading = false; _error = err; });
-              if (err == null && mounted) MainShell.setTabIndex?.call(0);
+              if (err == null && mounted) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  MainShell.setTabIndex?.call(0);
+                });
+              }
             },
             child: _loading ? const CircularProgressIndicator() : const Text('Login'),
           ),
@@ -200,7 +204,11 @@ class _SignUpFormState extends State<_SignUpForm> {
               setState(() { _loading = true; _error = null; });
               final err = await auth.signUp(_email.text, _pw.text, _nickname.text);
               setState(() { _loading = false; _error = err; });
-              if (err == null && mounted) Navigator.pop(context);
+              if (err == null && mounted) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  MainShell.setTabIndex?.call(0);
+                });
+              }
             },
             child: _loading ? const CircularProgressIndicator() : const Text('Sign Up'),
           ),

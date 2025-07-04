@@ -520,18 +520,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       final totalProblems = gameProvider.totalProblems;
       final duration = gameProvider.gameDuration;
       Future.delayed(const Duration(milliseconds: 300), () {
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => ResultScreen(
-                correctAnswers: correctAnswers,
-                totalProblems: totalProblems,
-                duration: duration,
-              ),
-              settings: const RouteSettings(name: 'ResultScreen'),
-            ),
-          );
-        }
+        MainShell.showResultScreen?.call(correctAnswers, totalProblems, duration);
       });
       return;
     }
