@@ -47,16 +47,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           body: Material(
             color: Colors.transparent,
             child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF8ED6FB), // sky blue
-                    Color(0xFFA0EACF), // light green
-                  ],
-                ),
-              ),
+              decoration: UnicornDecorations.appBackground,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
