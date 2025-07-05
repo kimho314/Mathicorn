@@ -167,17 +167,6 @@ class _UnicornBackground extends StatelessWidget {
           child: Stack(
             children: [
               Positioned(
-                top: 40,
-                left: 20,
-                child: SizedBox(
-                  width: 90,
-                  child: Opacity(
-                    opacity: 0.85,
-                    child: Lottie.asset('assets/animations/unicorn.json', repeat: true),
-                  ),
-                ),
-              ),
-              Positioned(
                 bottom: 60,
                 right: 30,
                 child: SizedBox(
