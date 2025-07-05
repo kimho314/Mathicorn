@@ -59,16 +59,7 @@ class _WrongNoteScreenState extends State<WrongNoteScreen> {
       body: Material(
         color: Colors.transparent,
         child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF8ED6FB), // sky blue
-                Color(0xFFA0EACF), // light green
-              ],
-            ),
-          ),
+          decoration: UnicornDecorations.appBackground,
           child: Consumer<WrongNoteProvider>(
             builder: (context, provider, child) {
               List<WrongAnswer> filtered = provider.filter(
