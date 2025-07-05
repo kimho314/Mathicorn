@@ -28,11 +28,14 @@ class AuthProvider with ChangeNotifier {
   Future<String?> signIn(String email, String password) async {
     try {
       final res = await Supabase.instance.client.auth.signInWithPassword(email: email, password: password);
+      print('[Supabase Login Result] user: \\${res.user}, session: \\${res.session}');
       if (res.user != null) return null;
       return 'Login failed';
     } on AuthException catch (e) {
+      print('[Supabase Login AuthException] \\${e.message}');
       return e.message;
     } catch (e) {
+      print('[Supabase Login Exception] \\${e.toString()}');
       return 'Login failed';
     }
   }
@@ -44,6 +47,7 @@ class AuthProvider with ChangeNotifier {
         password: password,
         data: {'nickname': nickname},
       );
+      print('[Supabase SignUp Result] user: \\${res.user}, session: \\${res.session}');
       if (res.user != null) {
         // users 테이블에도 정보 저장
         await Supabase.instance.client.from('users').insert({
@@ -59,8 +63,10 @@ class AuthProvider with ChangeNotifier {
       }
       return 'Sign up failed';
     } on AuthException catch (e) {
+      print('[Supabase SignUp AuthException] \\${e.message}');
       return e.message;
     } catch (e) {
+      print('[Supabase SignUp Exception] \\${e.toString()}');
       return 'Sign up failed';
     }
   }

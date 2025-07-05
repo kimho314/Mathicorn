@@ -78,16 +78,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: Material(
         color: Colors.transparent,
         child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF8ED6FB), // sky blue
-                Color(0xFFA0EACF), // light green
-              ],
-            ),
-          ),
+          decoration: UnicornDecorations.appBackground,
           child: Consumer<GameProvider>(
             builder: (context, gameProvider, child) {
               // Consumer에서 최신 프로필 정보 가져오기

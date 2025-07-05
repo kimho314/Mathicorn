@@ -17,8 +17,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!, // TODO: 실제 프로젝트 URL로 변경
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!, // TODO: 실제 anon public key로 변경
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
   runApp(const FunnyCalcApp());
 }
