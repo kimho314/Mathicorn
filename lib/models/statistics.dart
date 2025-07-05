@@ -55,9 +55,9 @@ class Statistics {
       'average_time_per_question': averageTimePerQuestion,
       'favorite_operation': favoriteOperation,
       'weakest_operation': weakestOperation,
-      'daily_activity': jsonEncode(dailyActivity),
-      'operation_accuracy': jsonEncode(operationAccuracy),
-      'level_accuracy': jsonEncode(levelAccuracy),
+      'daily_activity': dailyActivity,
+      'operation_accuracy': operationAccuracy,
+      'level_accuracy': levelAccuracy.map((k, v) => MapEntry(k.toString(), v)),
     };
   }
 } 

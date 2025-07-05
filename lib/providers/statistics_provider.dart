@@ -119,13 +119,45 @@ class StatisticsProvider extends ChangeNotifier {
       operationAccuracy: opAccuracy,
       levelAccuracy: levelAccuracy,
     );
+    print('[DEBUG] Statistics before upsert (on submit): \\${_statistics!.toJson()}');
     notifyListeners();
     // 서버에 upsert
     try {
       final supabase = Supabase.instance.client;
-      await supabase.from('statistics').upsert(_statistics!.toJson());
+      final res = await supabase.from('statistics').upsert(_statistics!.toJson());
+      print('[STATISTICS upsert on submit] response: \\${res}');
     } catch (e) {
-      // 네트워크 에러 등은 무시하고 로컬만 갱신
+      print('[STATISTICS upsert on submit ERROR] \\${e.toString()}');
     }
+  }
+
+  // 현재 statistics를 Supabase에 upsert
+  Future<void> upsertStatistics() async {
+    if (_statistics == null) return;
+    print('[DEBUG] Statistics before upsert (manual): \\${_statistics!.toJson()}');
+    try {
+      final supabase = Supabase.instance.client;
+      final res = await supabase.from('statistics').upsert(_statistics!.toJson());
+      print('[STATISTICS upsert] response: \\${res}');
+    } catch (e) {
+      print('[STATISTICS upsert ERROR] \\${e.toString()}');
+    }
+  }
+
+  // 통계 객체를 명시적으로 초기화
+  void initializeStatistics(String userId) {
+    _statistics = Statistics(
+      userId: userId,
+      totalSolved: 0,
+      totalCorrect: 0,
+      averageAccuracy: 0.0,
+      averageTimePerQuestion: 0.0,
+      favoriteOperation: '',
+      weakestOperation: '',
+      dailyActivity: {},
+      operationAccuracy: {},
+      levelAccuracy: {},
+    );
+    notifyListeners();
   }
 } 

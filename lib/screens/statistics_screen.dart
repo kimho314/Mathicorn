@@ -37,8 +37,20 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           return Center(child: Text('에러: \n${statisticsProvider.error}'));
         }
         final stats = statisticsProvider.statistics;
-        if (stats == null) {
-          return const Center(child: Text('통계 데이터가 없습니다.'));
+        bool isInitialStats = stats != null &&
+          stats.totalSolved == 0 &&
+          stats.totalCorrect == 0 &&
+          stats.averageAccuracy == 0.0 &&
+          stats.averageTimePerQuestion == 0.0 &&
+          stats.favoriteOperation == '' &&
+          stats.weakestOperation == '' &&
+          stats.dailyActivity.isEmpty &&
+          stats.operationAccuracy.isEmpty &&
+          stats.levelAccuracy.isEmpty;
+        if (stats == null || isInitialStats) {
+          return const Scaffold(
+            body: Center(child: Text('No statistics data yet.', style: TextStyle(fontSize: 18))),
+          );
         }
         return Scaffold(
           appBar: AppBar(

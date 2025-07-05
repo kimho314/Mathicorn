@@ -12,6 +12,7 @@ import '../providers/statistics_provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/unicorn_theme.dart';
 import 'package:Mathicorn/screens/main_shell.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -41,6 +42,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    // 통계 객체가 없으면 초기화
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      final statisticsProvider = Provider.of<StatisticsProvider>(context, listen: false);
+      if (auth.isLoggedIn && auth.user != null && statisticsProvider.statistics == null) {
+        statisticsProvider.initializeStatistics(auth.user!.id);
+      }
+    });
     _questionAnimationController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -504,21 +513,25 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
   }
 
-  void _moveToNextProblem() {
+  void _moveToNextProblem() async {
     if (!mounted) return;
-    
     // 문제 넘어갈 때 사운드 중지
     _audioPlayer.stop();
     // GameProvider에서 다음 문제로 이동
     final gameProvider = context.read<GameProvider>();
     final wasLastProblem = gameProvider.currentProblemIndex + 1 >= gameProvider.totalProblems;
     gameProvider.moveToNextProblem();
-    
     // 게임이 끝났으면 결과 화면으로 이동
     if (wasLastProblem) {
       final correctAnswers = gameProvider.correctAnswers;
       final totalProblems = gameProvider.totalProblems;
       final duration = gameProvider.gameDuration;
+      // 통계 최종 저장 (로그인 유저만)
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      if (auth.isLoggedIn && auth.user != null) {
+        final statisticsProvider = Provider.of<StatisticsProvider>(context, listen: false);
+        await statisticsProvider.upsertStatistics();
+      }
       Future.delayed(const Duration(milliseconds: 300), () {
         MainShell.showResultScreen?.call(correctAnswers, totalProblems, duration);
       });

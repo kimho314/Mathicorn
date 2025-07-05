@@ -110,14 +110,16 @@ CREATE TABLE wrong_answers (
 
 -- 3. 통계 테이블
 CREATE TABLE statistics (
-    user_id UUID PRIMARY KEY,
-    total_solved INTEGER DEFAULT 0,
-    total_correct INTEGER DEFAULT 0,
-    average_accuracy FLOAT DEFAULT 0.0,
-    favorite_operation VARCHAR(20),
-    average_time_per_question FLOAT DEFAULT 0.0,
-    weakest_operation VARCHAR(20),
-    daily_activity JSONB DEFAULT '{}',
+    user_id uuid not null,
+    total_solved integer null default 0,
+    total_correct integer null default 0,
+    average_accuracy double precision null default 0.0,
+    favorite_operation character varying(20) null,
+    average_time_per_question double precision null default 0.0,
+    weakest_operation character varying(20) null,
+    daily_activity jsonb null default '{}'::jsonb,
+    level_accuracy jsonb null default '{}'::jsonb,
+    operation_accuracy jsonb null default '{}'::jsonb,
 
     CONSTRAINT fk_statistics_user
         FOREIGN KEY(user_id)
