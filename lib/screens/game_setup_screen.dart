@@ -140,7 +140,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Select Level (Optional)',
+          'Select Level',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -172,8 +172,6 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
           ),
           child: Column(
             children: [
-              _buildLevelCard(null, 'Custom Mode', 'Choose operations manually', Colors.grey),
-              const SizedBox(height: 8),
               ...LevelManager.getAllLevels().map((levelConfig) => 
                 _buildLevelCard(
                   levelConfig.level,
