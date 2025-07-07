@@ -193,34 +193,31 @@ class GameProvider extends ChangeNotifier {
     for (int i = 0; i < _totalProblems; i++) {
       final operation = _selectedOperations[random.nextInt(_selectedOperations.length)];
       MathProblem problem;
-      
+      int num1, num2, answer;
       switch (operation) {
         case OperationType.addition:
-          final num1 = random.nextInt(20) + 1;
-          final num2 = random.nextInt(20) + 1;
-          final answer = num1 + num2;
-          problem = _createProblem(num1, num2, operation, answer);
+          num1 = random.nextInt(20) + 1;
+          num2 = random.nextInt(20) + 1;
+          answer = num1 + num2;
           break;
         case OperationType.subtraction:
-          final num1 = random.nextInt(20) + 10;
-          final num2 = random.nextInt(num1) + 1;
-          final answer = num1 - num2;
-          problem = _createProblem(num1, num2, operation, answer);
+          num1 = random.nextInt(20) + 10;
+          num2 = random.nextInt(num1) + 1;
+          answer = num1 - num2;
           break;
         case OperationType.multiplication:
-          final num1 = random.nextInt(10) + 1;
-          final num2 = random.nextInt(10) + 1;
-          final answer = num1 * num2;
-          problem = _createProblem(num1, num2, operation, answer);
+          num1 = random.nextInt(10) + 1;
+          num2 = random.nextInt(10) + 1;
+          answer = num1 * num2;
           break;
         case OperationType.division:
-          final num2 = random.nextInt(9) + 2;
-          final answer = random.nextInt(10) + 1;
-          final num1 = num2 * answer;
-          problem = _createProblem(num1, num2, operation, answer);
+          num2 = random.nextInt(9) + 2;
+          answer = random.nextInt(10) + 1;
+          num1 = num2 * answer;
           break;
       }
-      
+      // 항상 level: _selectedLevel을 넘긴다
+      problem = _createProblem(num1, num2, operation, answer, level: _selectedLevel);
       _problems.add(problem);
     }
   }

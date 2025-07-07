@@ -4,13 +4,24 @@ import 'package:Mathicorn/providers/game_provider.dart';
 import 'package:Mathicorn/screens/home_screen.dart';
 import 'package:Mathicorn/screens/game_setup_screen.dart';
 import '../utils/unicorn_theme.dart';
+import 'package:Mathicorn/models/math_problem.dart';
+import 'package:Mathicorn/screens/main_shell.dart';
+import 'package:Mathicorn/screens/game_screen.dart';
 
 class ResultScreen extends StatefulWidget {
   final int correctAnswers;
   final int totalProblems;
   final Duration? duration;
+  final GameLevel? selectedLevel;
   final VoidCallback? onClose;
-  const ResultScreen({required this.correctAnswers, required this.totalProblems, this.duration, Key? key, this.onClose}) : super(key: key);
+  const ResultScreen({
+    required this.correctAnswers,
+    required this.totalProblems,
+    this.duration,
+    this.selectedLevel,
+    Key? key,
+    this.onClose,
+  }) : super(key: key);
 
   @override
   State<ResultScreen> createState() => _ResultScreenState();
@@ -320,8 +331,54 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
   }
 
   Widget _buildActionButtons() {
+    final gameProvider = Provider.of<GameProvider>(context, listen: false);
+    final currentLevel = widget.selectedLevel;
+    print('ResultScreen: currentLevel = ' + (currentLevel?.toString() ?? 'null'));
+    print('ResultScreen: GameLevel.values = ' + GameLevel.values.toString());
+    final nextLevel = currentLevel != null && currentLevel.index < GameLevel.values.length - 1
+        ? GameLevel.values[currentLevel.index + 1]
+        : null;
+    print('ResultScreen: nextLevel = ' + (nextLevel?.toString() ?? 'null'));
     return Column(
       children: [
+        if (nextLevel != null)
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: () {
+                print('ResultScreen: nextLevel = ' + (nextLevel?.toString() ?? 'null'));
+                gameProvider.setGameSettings(
+                  totalProblems: gameProvider.totalProblems,
+                  operations: LevelManager.getLevelConfig(nextLevel).operations,
+                  level: nextLevel,
+                );
+                gameProvider.startGame();
+                Navigator.of(context).popUntil((route) => route.isFirst);
+                if (MainShell.setTabIndex != null) {
+                  MainShell.setTabIndex!(2);
+                }
+                if (widget.onClose != null) {
+                  widget.onClose!();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: Text(
+                'Next Level! (Lv${nextLevel.index + 1})',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        if (nextLevel != null) const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
           height: 56,

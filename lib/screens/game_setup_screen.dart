@@ -16,7 +16,7 @@ class GameSetupScreen extends StatefulWidget {
 class _GameSetupScreenState extends State<GameSetupScreen> {
   int _selectedProblemCount = 10;
   final List<OperationType> _selectedOperations = [OperationType.addition];
-  GameLevel? _selectedLevel;
+  GameLevel? _selectedLevel = GameLevel.level1;
 
   @override
   Widget build(BuildContext context) {
@@ -320,7 +320,14 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
   }
 
   void _startGame() {
+    if (_selectedLevel == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('레벨을 선택하세요!')),
+      );
+      return;
+    }
     final gameProvider = context.read<GameProvider>();
+    print('GameSetupScreen: _selectedLevel = ' + (_selectedLevel?.toString() ?? 'null'));
     gameProvider.setGameSettings(
       totalProblems: _selectedProblemCount,
       operations: _selectedOperations,

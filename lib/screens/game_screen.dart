@@ -532,8 +532,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         final statisticsProvider = Provider.of<StatisticsProvider>(context, listen: false);
         await statisticsProvider.upsertStatistics();
       }
+      final lastLevel = gameProvider.problems.isNotEmpty ? gameProvider.problems.last.level : null;
+      print('GameScreen: lastLevel = ' + (lastLevel?.toString() ?? 'null'));
       Future.delayed(const Duration(milliseconds: 300), () {
-        MainShell.showResultScreen?.call(correctAnswers, totalProblems, duration);
+        MainShell.showResultScreen?.call(correctAnswers, totalProblems, duration, lastLevel);
       });
       return;
     }

@@ -12,6 +12,8 @@ import 'package:Mathicorn/widgets/login_required_dialog.dart';
 import 'package:Mathicorn/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import '../utils/unicorn_theme.dart';
+import '../providers/game_provider.dart';
+import 'package:Mathicorn/models/math_problem.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -19,7 +21,7 @@ class MainShell extends StatefulWidget {
   // 외부에서 탭 인덱스 변경을 위한 static 콜백
   static void Function(int)? setTabIndex;
 
-  static void Function(int, int, Duration?)? showResultScreen;
+  static void Function(int, int, Duration?, GameLevel?)? showResultScreen;
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -49,13 +51,14 @@ class _MainShellState extends State<MainShell> {
     MainShell.setTabIndex = (int idx) {
       if (mounted) setState(() => _selectedIndex = idx);
     };
-    MainShell.showResultScreen = (int correctAnswers, int totalProblems, Duration? duration) {
+    MainShell.showResultScreen = (int correctAnswers, int totalProblems, Duration? duration, GameLevel? level) {
       if (_instance != null && _instance!.mounted) {
         _instance!.setState(() {
           _instance!._resultScreenData = {
             'correctAnswers': correctAnswers,
             'totalProblems': totalProblems,
             'duration': duration,
+            'selectedLevel': level,
           };
         });
       }
@@ -136,6 +139,7 @@ class _MainShellState extends State<MainShell> {
                 correctAnswers: _resultScreenData!['correctAnswers'],
                 totalProblems: _resultScreenData!['totalProblems'],
                 duration: _resultScreenData!['duration'],
+                selectedLevel: _resultScreenData!['selectedLevel'],
                 onClose: () {
                   setState(() => _resultScreenData = null);
                 },
