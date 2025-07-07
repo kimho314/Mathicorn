@@ -146,7 +146,8 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                                   style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
+                                    color: Colors.white,
+                                    shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
                                   ),
                                 ),
                               ],
@@ -215,14 +216,15 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
 
   Widget _buildScoreDisplay(int score, int correctAnswers, int totalProblems) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
@@ -232,24 +234,25 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
           Text(
             '$score points',
             style: const TextStyle(
-              fontSize: 48,
+              fontSize: 40,
               fontWeight: FontWeight.bold,
-              color: Colors.blue,
+              color: Color(0xFF8B5CF6),
+              shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
             ),
           ),
           const SizedBox(height: 8),
           Text(
             '$correctAnswers / $totalProblems problems correct',
             style: const TextStyle(
-              fontSize: 18,
-              color: Colors.grey,
+              fontSize: 16,
+              color: Color.fromRGBO(255,255,255,0.7),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           LinearProgressIndicator(
             value: correctAnswers / totalProblems,
-            backgroundColor: Colors.grey.withOpacity(0.3),
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+            backgroundColor: Colors.grey.withOpacity(0.2),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
             minHeight: 8,
           ),
         ],
@@ -262,22 +265,24 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     final seconds = duration.inSeconds % 60;
     
     return Container(
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.timer, color: Colors.blue),
+          const Icon(Icons.timer, color: Color(0xFF8B5CF6)),
           const SizedBox(width: 8),
           Text(
             'Time taken: ${minutes}m ${seconds}s',
             style: const TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
             ),
           ),
         ],
@@ -301,29 +306,39 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.yellow.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+        color: Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [
-          const Text(
+          Text(
             'Rewards Earned!',
-            style: TextStyle(
-              fontSize: 16,
+            style: const TextStyle(
+              fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.orange,
+              color: Color(0xFF8B5CF6),
+              shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
             ),
           ),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: rewards.map((reward) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Text(reward, style: const TextStyle(fontSize: 32)),
-            )).toList(),
+            children: [
+              if (score >= 90) ...[
+                const Text('🏆', style: TextStyle(fontSize: 32, color: Color(0xFFFDE047))),
+                SizedBox(width: 8),
+              ],
+              if (score >= 70) ...[
+                const Text('⭐', style: TextStyle(fontSize: 32, color: Color(0xFFFDE047))),
+                SizedBox(width: 8),
+              ],
+              if (score >= 90) ...[
+                const Text('🏅', style: TextStyle(fontSize: 32, color: Color(0xFF8B5CF6))),
+              ],
+            ],
           ),
         ],
       ),
@@ -363,11 +378,12 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: Color(0xFF8B5CF6),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
+                elevation: 4,
               ),
               child: Text(
                 'Next Level! (Lv${nextLevel.index + 1})',
@@ -383,10 +399,18 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
           width: double.infinity,
           height: 56,
           child: OutlinedButton(
-            onPressed: widget.onClose ?? () {},
+            onPressed: () {
+              Navigator.of(context).popUntil((route) => route.isFirst);
+              if (MainShell.setTabIndex != null) {
+                MainShell.setTabIndex!(0);
+              }
+              if (widget.onClose != null) {
+                widget.onClose!();
+              }
+            },
             style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.blue,
-              side: const BorderSide(color: Colors.blue),
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Color(0xFF8B5CF6), width: 2),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -394,6 +418,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
             child: const Text(
               'Back to Home',
               style: TextStyle(
+                color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
