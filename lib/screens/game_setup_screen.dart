@@ -94,7 +94,12 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                 children: [
                   const Text(
                     'Problems:',
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+                    ),
                   ),
                   Text(
                     '$_selectedProblemCount problems',
@@ -102,6 +107,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
+                      shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
                     ),
                   ),
                 ],
@@ -122,10 +128,10 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
-                  Text('5 problems', style: TextStyle(color: Colors.grey)),
-                  Text('10 problems', style: TextStyle(color: Colors.grey)),
-                  Text('15 problems', style: TextStyle(color: Colors.grey)),
-                  Text('20 problems', style: TextStyle(color: Colors.grey)),
+                  Text('5 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
+                  Text('10 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
+                  Text('15 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
+                  Text('20 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
                 ],
               ),
             ],
@@ -153,7 +159,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
           'Choose a level to play with predefined difficulty settings',
           style: TextStyle(
             fontSize: 14,
-            color: Colors.grey,
+            color: Color.fromRGBO(255,255,255,0.7),
           ),
         ),
         const SizedBox(height: 16),
@@ -241,13 +247,14 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: isSelected ? color : Colors.white,
+                          shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
                         ),
                       ),
                       Text(
                         description,
                         style: TextStyle(
                           fontSize: 12,
-                          color: isSelected ? color.withOpacity(0.7) : Colors.grey,
+                          color: Color.fromRGBO(255,255,255,0.7),
                         ),
                       ),
                     ],
