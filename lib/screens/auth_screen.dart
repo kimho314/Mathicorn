@@ -132,6 +132,7 @@ class _LoginFormState extends State<_LoginForm> {
               if (err == null && mounted) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   MainShell.setTabIndex?.call(0);
+                  Navigator.of(context).popUntil((route) => route.isFirst);
                 });
               }
             },
@@ -207,6 +208,7 @@ class _SignUpFormState extends State<_SignUpForm> {
               if (err == null && mounted) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   MainShell.setTabIndex?.call(0);
+                  Navigator.of(context).popUntil((route) => route.isFirst);
                 });
               }
             },
