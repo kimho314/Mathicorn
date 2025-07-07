@@ -306,8 +306,8 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
           }
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.blue,
+          backgroundColor: Color(0xFF8B5CF6),
+          foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -318,6 +318,8 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
+            color: Colors.white,
+            shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
           ),
         ),
       ),
