@@ -42,8 +42,8 @@ class FunnyCalcApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) {
             final provider = SettingsProvider();
-            // 앱 시작 시 설정 로드
-            provider.loadSettings();
+            // 앱 시작 시 설정 로드 (초기화 시점에서는 AuthProvider를 전달할 수 없으므로 호출하지 않음)
+            // provider.loadSettings(); // 이 줄을 주석 처리 또는 삭제
             return provider;
           },
         ),

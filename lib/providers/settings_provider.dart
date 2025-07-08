@@ -1,66 +1,55 @@
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:Mathicorn/models/user_settings.dart';
+import 'package:Mathicorn/providers/auth_provider.dart';
 
 class SettingsProvider extends ChangeNotifier {
-  bool _soundEnabled = true;
-  bool _voiceEnabled = true;
-  bool _darkMode = false;
-  String _selectedLanguage = 'en';
+  UserSettings? _settings;
+  bool _loading = false;
+  String? _error;
 
-  bool get soundEnabled => _soundEnabled;
-  bool get voiceEnabled => _voiceEnabled;
-  bool get darkMode => _darkMode;
-  String get selectedLanguage => _selectedLanguage;
+  UserSettings? get settings => _settings;
+  bool get loading => _loading;
+  String? get error => _error;
 
-  Future<void> loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    _soundEnabled = prefs.getBool('soundEnabled') ?? true;
-    _voiceEnabled = prefs.getBool('voiceEnabled') ?? true;
-    _darkMode = prefs.getBool('darkMode') ?? false;
-    _selectedLanguage = prefs.getString('selectedLanguage') ?? 'en';
+  bool get soundEnabled => _settings?.soundEnabled ?? true;
+  String get selectedLanguage => _settings?.language ?? 'en';
+
+  Future<void> loadSettings(AuthProvider authProvider) async {
+    _loading = true;
+    _error = null;
     notifyListeners();
+    try {
+      final s = await authProvider.fetchUserSettings();
+      _settings = s;
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _loading = false;
+      notifyListeners();
+    }
   }
 
-  Future<void> setSoundEnabled(bool enabled) async {
-    _soundEnabled = enabled;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('soundEnabled', enabled);
+  Future<void> setSoundEnabled(bool enabled, AuthProvider authProvider) async {
+    if (_settings == null) return;
+    _settings = _settings!.copyWith(soundEnabled: enabled);
     notifyListeners();
+    try {
+      await authProvider.saveUserSettings(_settings!);
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
   }
 
-  Future<void> setVoiceEnabled(bool enabled) async {
-    _voiceEnabled = enabled;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('voiceEnabled', enabled);
+  Future<void> setLanguage(String language, AuthProvider authProvider) async {
+    if (_settings == null) return;
+    _settings = _settings!.copyWith(language: language);
     notifyListeners();
-  }
-
-  Future<void> setDarkMode(bool enabled) async {
-    _darkMode = enabled;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('darkMode', enabled);
-    notifyListeners();
-  }
-
-  Future<void> setLanguage(String language) async {
-    _selectedLanguage = language;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selectedLanguage', language);
-    notifyListeners();
-  }
-
-  Future<void> resetSettings() async {
-    _soundEnabled = true;
-    _voiceEnabled = true;
-    _darkMode = false;
-    _selectedLanguage = 'en';
-    
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('soundEnabled', true);
-    await prefs.setBool('voiceEnabled', true);
-    await prefs.setBool('darkMode', false);
-    await prefs.setString('selectedLanguage', 'en');
-    
-    notifyListeners();
+    try {
+      await authProvider.saveUserSettings(_settings!);
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
   }
 } 

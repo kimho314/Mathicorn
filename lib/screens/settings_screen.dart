@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:Mathicorn/providers/settings_provider.dart';
 import '../utils/unicorn_theme.dart';
 import 'main_shell.dart';
+import 'package:Mathicorn/providers/auth_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -16,16 +17,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SettingsProvider>().loadSettings();
+      final auth = context.read<AuthProvider>();
+      context.read<SettingsProvider>().loadSettings(auth);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.read<AuthProvider>();
     return Container(
       decoration: UnicornDecorations.appBackground,
       child: Consumer<SettingsProvider>(
         builder: (context, settingsProvider, child) {
+          if (settingsProvider.loading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (settingsProvider.error != null) {
+            return Center(
+              child: Text(
+                'Error: \\${settingsProvider.error}',
+                style: const TextStyle(color: Colors.red, fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+            );
+          }
           return ListView(
             padding: const EdgeInsets.all(20.0),
             children: [
@@ -38,7 +53,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: 'Play sound effects for correct/wrong answers',
                     value: settingsProvider.soundEnabled,
                     onChanged: (value) {
-                      settingsProvider.setSoundEnabled(value);
+                      settingsProvider.setSoundEnabled(value, auth);
                     },
                   ),
                 ],
@@ -48,7 +63,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingCard(
                 title: '🌍 Language Settings',
                 children: [
-                  _buildLanguageSelector(settingsProvider),
+                  _buildLanguageSelector(settingsProvider, auth),
                 ],
               ),
             ],
@@ -115,16 +130,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildLanguageSelector(SettingsProvider settingsProvider) {
+  Widget _buildLanguageSelector(SettingsProvider settingsProvider, AuthProvider auth) {
     return ListTile(
       title: const Text('Language'),
       subtitle: const Text('English'),
       trailing: const Icon(Icons.arrow_forward_ios),
-      onTap: () => _showLanguageDialog(context, settingsProvider),
+      onTap: () => _showLanguageDialog(context, settingsProvider, auth),
     );
   }
 
-  void _showLanguageDialog(BuildContext context, SettingsProvider settingsProvider) {
+  void _showLanguageDialog(BuildContext context, SettingsProvider settingsProvider, AuthProvider auth) {
     showDialog(
       context: context,
       builder: (context) {
@@ -136,8 +151,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               RadioListTile<String>(
                 title: const Text('English'),
                 value: 'en',
-                groupValue: 'en',
+                groupValue: settingsProvider.selectedLanguage,
                 onChanged: (value) {
+                  if (value != null) {
+                    settingsProvider.setLanguage(value, auth);
+                  }
                   Navigator.of(context).pop();
                 },
               ),

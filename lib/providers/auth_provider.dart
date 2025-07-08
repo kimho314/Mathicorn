@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:Mathicorn/models/user_profile.dart';
 import 'dart:convert';
+import 'package:Mathicorn/models/user_settings.dart';
 
 class AuthProvider with ChangeNotifier {
   User? _user;
@@ -118,5 +119,33 @@ class AuthProvider with ChangeNotifier {
       totalProblems: res['total_problems'] ?? 0,
       collectedStickers: stickers,
     );
+  }
+
+  Future<void> saveUserSettings(UserSettings settings) async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) throw Exception('No logged in user');
+    await Supabase.instance.client.from('user_settings').upsert({
+      'id': user.id,
+      'sound_enabled': settings.soundEnabled,
+      'language': settings.language,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    });
+  }
+
+  Future<UserSettings> fetchUserSettings() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) throw Exception('No logged in user');
+    final res = await Supabase.instance.client
+        .from('user_settings')
+        .select()
+        .eq('id', user.id)
+        .maybeSingle();
+    if (res == null) {
+      // row가 없으면 기본 세팅 생성 및 저장
+      final defaultSettings = UserSettings(soundEnabled: true, language: 'en');
+      await saveUserSettings(defaultSettings);
+      return defaultSettings;
+    }
+    return UserSettings.fromJson(res);
   }
 } 
