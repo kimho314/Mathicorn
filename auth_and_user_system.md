@@ -126,6 +126,18 @@ CREATE TABLE statistics (
         REFERENCES users(id)
         ON DELETE CASCADE
 );
+
+-- 4. 유저 프로필 테이블
+create table user_profiles (
+  id uuid primary key references auth.users(id) on delete cascade, -- Supabase auth와 연동
+  name text not null,
+  total_score integer not null default 0,
+  total_problems integer not null default 0,
+  collected_stickers jsonb not null default '[]',
+  -- wrong_problems는 별도 테이블로 분리 추천 (정규화), 여기서는 제외
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
 ```
 
 

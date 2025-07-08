@@ -16,20 +16,23 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final _nameController = TextEditingController();
   bool _isEditing = false;
+  UserProfile? _userProfile;
+  bool _loading = false;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadUserProfile();
+      _fetchUserProfileFromSupabase();
     });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // 화면이 다시 표시될 때마다 최신 통계 로드
-    _loadUserProfile();
+    // 화면이 다시 표시될 때마다 최신 프로필 로드
+    _fetchUserProfileFromSupabase();
   }
 
   @override
@@ -38,9 +41,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  void _loadUserProfile() {
-    final auth = context.read<AuthProvider>();
-    _nameController.text = auth.nickname;
+  Future<void> _fetchUserProfileFromSupabase() async {
+    setState(() { _loading = true; _error = null; });
+    try {
+      final auth = context.read<AuthProvider>();
+      final profile = await auth.fetchUserProfile();
+      setState(() {
+        _userProfile = profile;
+        _nameController.text = profile?.name ?? '';
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = '프로필 정보를 불러오지 못했습니다.';
+        _loading = false;
+      });
+    }
   }
 
   @override
@@ -87,38 +103,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
         color: Colors.transparent,
         child: Container(
           decoration: UnicornDecorations.appBackground,
-          child: Consumer<GameProvider>(
-            builder: (context, gameProvider, child) {
-              // Consumer에서 최신 프로필 정보 가져오기
-              final userProfile = gameProvider.userProfile;
-              
-              // 프로필 정보가 변경되면 로컬 상태 업데이트
-              if (userProfile != null && _nameController.text != userProfile.name) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _loadUserProfile();
-                });
-              }
-              
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  children: [
-                    // 프로필 카드
-                    _buildProfileCard(userProfile),
-                    const SizedBox(height: 24),
-                    
-                    // 통계 카드
-                    _buildStatsCard(userProfile),
-                    const SizedBox(height: 24),
-                    
-                    // 스티커 갤러리
-                    _buildStickerGallery(userProfile),
-                    const SizedBox(height: 20), // 하단 여백 추가
-                  ],
-                ),
-              );
-            },
-          ),
+          child: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null
+                  ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        children: [
+                          // 프로필 카드
+                          _buildProfileCard(_userProfile),
+                          const SizedBox(height: 24),
+                          // 통계 카드
+                          _buildStatsCard(_userProfile),
+                          const SizedBox(height: 24),
+                          // 스티커 갤러리
+                          _buildStickerGallery(_userProfile),
+                          const SizedBox(height: 20), // 하단 여백 추가
+                        ],
+                      ),
+                    ),
         ),
       ),
     );

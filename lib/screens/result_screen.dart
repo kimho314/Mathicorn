@@ -7,6 +7,8 @@ import '../utils/unicorn_theme.dart';
 import 'package:Mathicorn/models/math_problem.dart';
 import 'package:Mathicorn/screens/main_shell.dart';
 import 'package:Mathicorn/screens/game_screen.dart';
+import 'package:Mathicorn/providers/auth_provider.dart';
+import 'package:Mathicorn/models/user_profile.dart';
 
 class ResultScreen extends StatefulWidget {
   final int correctAnswers;
@@ -64,6 +66,24 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     
     _animationController.forward();
     _catAnimationController.repeat(reverse: true);
+
+    // 게임 결과를 UserProfile에 반영하고 Supabase에 저장 (로딩/에러 피드백 추가)
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final scaffold = ScaffoldMessenger.of(context);
+      try {
+        scaffold.showSnackBar(const SnackBar(content: Text('프로필 저장 중...'), duration: Duration(seconds: 1)));
+        final auth = context.read<AuthProvider>();
+        final profile = await auth.fetchUserProfile() ?? UserProfile(name: auth.nickname);
+        final updated = profile.copyWith(
+          totalScore: profile.totalScore + widget.correctAnswers,
+          totalProblems: profile.totalProblems + widget.totalProblems,
+        );
+        await auth.saveUserProfile(updated);
+        scaffold.showSnackBar(const SnackBar(content: Text('프로필이 저장되었습니다!'), duration: Duration(seconds: 1)));
+      } catch (e) {
+        scaffold.showSnackBar(const SnackBar(content: Text('프로필 저장에 실패했습니다.'), duration: Duration(seconds: 2)));
+      }
+    });
   }
 
   @override

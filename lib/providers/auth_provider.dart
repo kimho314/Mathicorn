@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:Mathicorn/models/user_profile.dart';
+import 'dart:convert';
 
 class AuthProvider with ChangeNotifier {
   User? _user;
@@ -73,5 +75,48 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> signOut() async {
     await Supabase.instance.client.auth.signOut();
+  }
+
+  Future<void> saveUserProfile(UserProfile profile) async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) throw Exception('No logged in user');
+    await Supabase.instance.client.from('user_profiles').upsert({
+      'id': user.id,
+      'name': profile.name,
+      'total_score': profile.totalScore,
+      'total_problems': profile.totalProblems,
+      'collected_stickers': jsonEncode(profile.collectedStickers),
+    });
+  }
+
+  Future<UserProfile?> fetchUserProfile() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) throw Exception('No logged in user');
+    final res = await Supabase.instance.client
+        .from('user_profiles')
+        .select()
+        .eq('id', user.id)
+        .maybeSingle(); // 변경: .single() -> .maybeSingle() (row 없을 때 null 반환)
+    if (res == null) {
+      // row가 없으면 기본 프로필 생성 및 저장
+      final defaultProfile = UserProfile(
+        name: nickname,
+        totalScore: 0,
+        totalProblems: 0,
+        collectedStickers: [],
+      );
+      await saveUserProfile(defaultProfile);
+      return defaultProfile;
+    }
+    // collected_stickers는 jsonb이므로 List<String>으로 변환
+    final stickers = (res['collected_stickers'] is String)
+        ? List<String>.from(jsonDecode(res['collected_stickers']))
+        : List<String>.from(res['collected_stickers'] ?? []);
+    return UserProfile(
+      name: res['name'] ?? 'Friend',
+      totalScore: res['total_score'] ?? 0,
+      totalProblems: res['total_problems'] ?? 0,
+      collectedStickers: stickers,
+    );
   }
 } 
