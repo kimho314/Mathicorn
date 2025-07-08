@@ -227,7 +227,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Colors.white,
           ),
         ),
       ],
