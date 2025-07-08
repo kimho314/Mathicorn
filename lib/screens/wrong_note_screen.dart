@@ -16,8 +16,6 @@ class _WrongNoteScreenState extends State<WrongNoteScreen> {
   int? _selectedLevel;
   DateTime? _fromDate;
   DateTime? _toDate;
-  bool _reviewMode = false;
-  bool _randomOrder = false;
 
   @override
   void initState() {
@@ -68,9 +66,6 @@ class _WrongNoteScreenState extends State<WrongNoteScreen> {
                 from: _fromDate,
                 to: _toDate,
               );
-              if (_reviewMode) {
-                filtered = provider.getForReview(random: _randomOrder);
-              }
               return Column(
                 children: [
                   _buildFilterBar(provider),
@@ -142,41 +137,6 @@ class _WrongNoteScreenState extends State<WrongNoteScreen> {
                         },
                       ),
                     ),
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Row(
-                      children: [
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Review Mode'),
-                          onPressed: filtered.isEmpty
-                              ? null
-                              : () {
-                                  setState(() {
-                                    _reviewMode = !_reviewMode;
-                                  });
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _reviewMode ? Colors.orange : null,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        if (_reviewMode)
-                          ElevatedButton.icon(
-                            icon: const Icon(Icons.shuffle),
-                            label: const Text('Random Order'),
-                            onPressed: () {
-                              setState(() {
-                                _randomOrder = !_randomOrder;
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _randomOrder ? Colors.blue : null,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
                 ],
               );
             },
