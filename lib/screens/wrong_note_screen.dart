@@ -84,16 +84,48 @@ class _WrongNoteScreenState extends State<WrongNoteScreen> {
                           final wa = filtered[idx];
                           return Card(
                             child: ListTile(
-                              leading: Icon(_getTypeIcon(wa.operationType ?? '')),
-                              title: Text(wa.questionText),
+                              leading: Icon(_getTypeIcon(wa.operationType ?? ''), color: Colors.white),
+                              title: Text(
+                                wa.questionText,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black26)],
+                                ),
+                              ),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Your answer: ${wa.userAnswer}'),
-                                  Text('Correct answer: ${wa.correctAnswer}'),
-                                  Text('Type: ${wa.operationType ?? '-'}, Level: ${wa.level ?? '-'}'),
+                                  Text(
+                                    'Your answer: ${wa.userAnswer}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Correct answer: ${wa.correctAnswer}',
+                                    style: const TextStyle(
+                                      color: Color(0xFFFDE047), // yellow 강조
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Type: ${_operationTypeToEnglish(wa.operationType)}, Level: ${wa.level ?? '-'}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                    ),
+                                  ),
                                   if (wa.createdAt != null)
-                                    Text('Time: ${wa.createdAt!.toLocal()}'),
+                                    Text(
+                                      'Time: ${wa.createdAt!.toLocal()}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                      ),
+                                    ),
                                 ],
                               ),
                               trailing: IconButton(
@@ -161,11 +193,12 @@ class _WrongNoteScreenState extends State<WrongNoteScreen> {
         children: [
           DropdownButton<String?>(
             value: _selectedType,
-            hint: const Text('Type'),
+            dropdownColor: Color(0xFF8B5CF6), // primary.purple
+            hint: const Text('Type', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             items: <String?>[null, 'Addition', 'Subtraction', 'Multiplication', 'Division', 'Mixed']
                 .map((type) => DropdownMenuItem(
                       value: type,
-                      child: Text(type ?? 'All'),
+                      child: Text(type ?? 'All', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                     ))
                 .toList(),
             onChanged: (v) => setState(() => _selectedType = v),
@@ -173,11 +206,12 @@ class _WrongNoteScreenState extends State<WrongNoteScreen> {
           const SizedBox(width: 8),
           DropdownButton<int?>(
             value: _selectedLevel,
-            hint: const Text('Level'),
+            dropdownColor: Color(0xFF8B5CF6), // primary.purple
+            hint: const Text('Level', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             items: [null, ...List.generate(12, (i) => i + 1)]
                 .map((level) => DropdownMenuItem(
                       value: level,
-                      child: Text(level == null ? 'All' : 'Lv$level'),
+                      child: Text(level == null ? 'All' : 'Lv$level', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                     ))
                 .toList(),
             onChanged: (v) => setState(() => _selectedLevel = v),
@@ -201,6 +235,23 @@ class _WrongNoteScreenState extends State<WrongNoteScreen> {
         return Icons.horizontal_split;
       default:
         return Icons.functions;
+    }
+  }
+
+  String _operationTypeToEnglish(String? type) {
+    switch (type) {
+      case '더하기':
+        return 'Addition';
+      case '빼기':
+        return 'Subtraction';
+      case '곱하기':
+        return 'Multiplication';
+      case '나누기':
+        return 'Division';
+      case '혼합':
+        return 'Mixed';
+      default:
+        return type ?? '-';
     }
   }
 } 
