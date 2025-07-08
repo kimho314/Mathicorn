@@ -176,7 +176,12 @@ class _SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)]
+        ),
       ),
     );
   }
@@ -189,7 +194,7 @@ class _DailyActivityBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (dailyActivity.isEmpty) {
-      return const Center(child: Text('No data'));
+      return const Center(child: Text('No data', style: TextStyle(color: Colors.white)));
     }
     final sortedKeys = dailyActivity.keys.toList()..sort();
     final barGroups = <BarChartGroupData>[];
@@ -238,7 +243,7 @@ class _DailyActivityBarChart extends StatelessWidget {
           barGroups: barGroups,
           titlesData: FlTitlesData(
             leftTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: true, reservedSize: 28),
+              sideTitles: SideTitles(showTitles: true, reservedSize: 28, getTitlesWidget: (value, meta) => Text(value.toInt().toString(), style: const TextStyle(color: Colors.white))),
             ),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
@@ -258,7 +263,7 @@ class _DailyActivityBarChart extends StatelessWidget {
             rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
             topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),
-          gridData: FlGridData(show: true),
+          gridData: FlGridData(show: true, drawHorizontalLine: true, drawVerticalLine: true, horizontalInterval: 10, verticalInterval: 1, getDrawingHorizontalLine: (value) => FlLine(color: Colors.white24, strokeWidth: 1), getDrawingVerticalLine: (value) => FlLine(color: Colors.white24, strokeWidth: 1)),
           borderData: FlBorderData(show: false),
         ),
       ),
@@ -273,15 +278,13 @@ class _OperationAccuracyPieChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (operationAccuracy.isEmpty) {
-      return const Center(child: Text('No data'));
+      return const Center(child: Text('No data', style: TextStyle(color: Colors.white)));
     }
     final colors = [
-      Colors.blue,
-      Colors.orange,
-      Colors.green,
-      Colors.purple,
-      Colors.red,
-      Colors.teal,
+      Color(0xFF8B5CF6), // primary.purple
+      // Color(0xFFFDE047), // secondary.yellow
+      // Color(0xFF06B6D4), // secondary.cyan
+      // Color(0xFF14B8A6), // secondary.teal
     ];
     int colorIdx = 0;
     final sections = operationAccuracy.entries.map((e) {
@@ -313,7 +316,7 @@ class _LevelAccuracyLineChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (levelAccuracy.isEmpty) {
-      return const Center(child: Text('No data'));
+      return const Center(child: Text('No data', style: TextStyle(color: Colors.white)));
     }
     final sortedKeys = levelAccuracy.keys.toList()..sort();
     final spots = sortedKeys.map((level) => FlSpot(level.toDouble(), levelAccuracy[level]!)).toList();
@@ -332,7 +335,7 @@ class _LevelAccuracyLineChart extends StatelessWidget {
         ],
         titlesData: FlTitlesData(
           leftTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: true, reservedSize: 28),
+            sideTitles: SideTitles(showTitles: true, reservedSize: 28, getTitlesWidget: (value, meta) => Text(value.toInt().toString(), style: const TextStyle(color: Colors.white))),
           ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
@@ -342,7 +345,7 @@ class _LevelAccuracyLineChart extends StatelessWidget {
                 if (!sortedKeys.contains(level)) return const SizedBox.shrink();
                 return Padding(
                   padding: const EdgeInsets.only(top: 6.0),
-                  child: Text('Lv$level', style: const TextStyle(fontSize: 12)),
+                  child: Text('Lv$level', style: const TextStyle(fontSize: 12, color: Colors.white)),
                 );
               },
             ),
@@ -350,7 +353,7 @@ class _LevelAccuracyLineChart extends StatelessWidget {
           rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
-        gridData: FlGridData(show: true),
+        gridData: FlGridData(show: true, drawHorizontalLine: true, drawVerticalLine: true, horizontalInterval: 20, verticalInterval: 1, getDrawingHorizontalLine: (value) => FlLine(color: Colors.white24, strokeWidth: 1), getDrawingVerticalLine: (value) => FlLine(color: Colors.white24, strokeWidth: 1)),
         borderData: FlBorderData(show: false),
       ),
     );
