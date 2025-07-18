@@ -32,7 +32,9 @@ class AuthProvider with ChangeNotifier {
     try {
       final res = await Supabase.instance.client.auth.signInWithPassword(email: email, password: password);
       print('[Supabase Login Result] user: \\${res.user}, session: \\${res.session}');
-      if (res.user != null) return null;
+      if (res.user != null) {
+        return null;
+      }
       return 'Login failed';
     } on AuthException catch (e) {
       print('[Supabase Login AuthException] \\${e.message}');

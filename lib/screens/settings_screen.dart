@@ -16,9 +16,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final auth = context.read<AuthProvider>();
-      context.read<SettingsProvider>().loadSettings(auth);
+      final settingsProvider = context.read<SettingsProvider>();
+      
+      // Supabase에서 user_settings 정보 조회
+      try {
+        final userSettings = await auth.fetchUserSettings();
+        settingsProvider.loadSettingsFromSupabase(userSettings);
+      } catch (e) {
+        print('Failed to load user settings: $e');
+        // 기본 설정으로 로드
+        settingsProvider.loadSettings(auth);
+      }
     });
   }
 
@@ -143,7 +153,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildLanguageSelector(SettingsProvider settingsProvider, AuthProvider auth) {
     return ListTile(
       title: const Text('Language'),
-      subtitle: const Text('English'),
+      subtitle: Text(_getLanguageText(settingsProvider.selectedLanguage)),
       trailing: const Icon(Icons.arrow_forward_ios),
       onTap: () => _showLanguageDialog(context, settingsProvider, auth),
     );
@@ -169,6 +179,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Navigator.of(context).pop();
                 },
               ),
+              RadioListTile<String>(
+                title: const Text('한국어'),
+                value: 'ko',
+                groupValue: settingsProvider.selectedLanguage,
+                onChanged: (value) {
+                  if (value != null) {
+                    settingsProvider.setLanguage(value, auth);
+                  }
+                  Navigator.of(context).pop();
+                },
+              ),
             ],
           ),
         );
@@ -177,6 +198,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   String _getLanguageText(String code) {
-    return 'English';
+    switch (code) {
+      case 'ko':
+        return '한국어';
+      case 'en':
+      default:
+        return 'English';
+    }
   }
 } 

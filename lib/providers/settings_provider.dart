@@ -11,7 +11,7 @@ class SettingsProvider extends ChangeNotifier {
   bool get loading => _loading;
   String? get error => _error;
 
-  bool get soundEnabled => _settings?.soundEnabled ?? true;
+  bool get soundEnabled => _settings?.soundEnabled ?? false;
   String get selectedLanguage => _settings?.language ?? 'en';
 
   Future<void> loadSettings(AuthProvider authProvider) async {
@@ -27,6 +27,13 @@ class SettingsProvider extends ChangeNotifier {
       _loading = false;
       notifyListeners();
     }
+  }
+
+  void loadSettingsFromSupabase(UserSettings userSettings) {
+    _settings = userSettings;
+    _loading = false;
+    _error = null;
+    notifyListeners();
   }
 
   Future<void> setSoundEnabled(bool enabled, AuthProvider authProvider) async {

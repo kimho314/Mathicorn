@@ -46,8 +46,15 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final auth = Provider.of<AuthProvider>(context, listen: false);
       final statisticsProvider = Provider.of<StatisticsProvider>(context, listen: false);
+      final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+      
       if (auth.isLoggedIn && auth.user != null && statisticsProvider.statistics == null) {
         statisticsProvider.initializeStatistics(auth.user!.id);
+      }
+      
+      // 설정이 로드되지 않았으면 로드
+      if (auth.isLoggedIn && (settingsProvider.loading || settingsProvider.settings == null)) {
+        settingsProvider.loadSettings(auth);
       }
     });
     _questionAnimationController = AnimationController(
@@ -449,9 +456,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   void _showCongratulationsDialog(MathProblem problem, GameProvider gameProvider) {
-    // 사운드 설정 확인
+    // 사운드 설정 확인 - 로딩 중이면 소리 재생하지 않음
     final settingsProvider = context.read<SettingsProvider>();
-    if (settingsProvider.soundEnabled) {
+    if (!settingsProvider.loading && settingsProvider.soundEnabled) {
       _audioPlayer.stop(); // 기존 사운드 중지
       _audioPlayer.play(AssetSource('sounds/correct.mp3'));
     }
@@ -570,9 +577,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   void _showWrongAnswerDialog(MathProblem problem, GameProvider gameProvider) {
-    // 사운드 설정 확인
+    // 사운드 설정 확인 - 로딩 중이면 소리 재생하지 않음
     final settingsProvider = context.read<SettingsProvider>();
-    if (settingsProvider.soundEnabled) {
+    if (!settingsProvider.loading && settingsProvider.soundEnabled) {
       _audioPlayer.stop(); // 기존 사운드 중지
       _audioPlayer.play(AssetSource('sounds/wrong.mp3'));
     }

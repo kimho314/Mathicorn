@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/unicorn_theme.dart';
 import 'main_shell.dart';
+import '../providers/settings_provider.dart';
 
 class AuthScreen extends StatefulWidget {
   final bool showSignUp;
@@ -127,16 +128,50 @@ class _LoginFormState extends State<_LoginForm> {
             style: UnicornButtonStyles.primary,
             onPressed: _loading ? null : () async {
               setState(() { _loading = true; _error = null; });
+              
+              // 로그인 시도
               final err = await auth.signIn(_email.text, _pw.text);
-              setState(() { _loading = false; _error = err; });
-              if (err == null && mounted) {
+              
+              if (err != null) {
+                setState(() { _loading = false; _error = err; });
+                return;
+              }
+              
+              // 로그인 성공 후 settings 로드
+              try {
+                final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+                await settingsProvider.loadSettings(auth);
+                print('[AuthScreen] Settings loaded successfully');
+              } catch (e) {
+                print('[AuthScreen] Failed to load settings: $e');
+                // settings 로드 실패해도 홈으로 이동
+              }
+              
+              if (mounted) {
+                setState(() { _loading = false; });
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   MainShell.setTabIndex?.call(0);
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 });
               }
             },
-            child: _loading ? const CircularProgressIndicator() : const Text('Login'),
+            child: _loading 
+                ? const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text('Loading...', style: TextStyle(color: Colors.white)),
+                    ],
+                  )
+                : const Text('Login'),
           ),
         ),
       ],
@@ -203,16 +238,50 @@ class _SignUpFormState extends State<_SignUpForm> {
             style: UnicornButtonStyles.primary,
             onPressed: _loading ? null : () async {
               setState(() { _loading = true; _error = null; });
+              
+              // 회원가입 시도
               final err = await auth.signUp(_email.text, _pw.text, _nickname.text);
-              setState(() { _loading = false; _error = err; });
-              if (err == null && mounted) {
+              
+              if (err != null) {
+                setState(() { _loading = false; _error = err; });
+                return;
+              }
+              
+              // 회원가입 성공 후 settings 로드
+              try {
+                final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+                await settingsProvider.loadSettings(auth);
+                print('[AuthScreen] Settings loaded successfully after signup');
+              } catch (e) {
+                print('[AuthScreen] Failed to load settings after signup: $e');
+                // settings 로드 실패해도 홈으로 이동
+              }
+              
+              if (mounted) {
+                setState(() { _loading = false; });
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   MainShell.setTabIndex?.call(0);
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 });
               }
             },
-            child: _loading ? const CircularProgressIndicator() : const Text('Sign Up'),
+            child: _loading 
+                ? const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text('Loading...', style: TextStyle(color: Colors.white)),
+                    ],
+                  )
+                : const Text('Sign Up'),
           ),
         ),
       ],
