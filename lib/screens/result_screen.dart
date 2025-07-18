@@ -32,10 +32,13 @@ class ResultScreen extends StatefulWidget {
 class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late AnimationController _catAnimationController;
+  late AnimationController _stickerAnimationController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
   late Animation<double> _catBounceAnimation;
   late Animation<double> _catRotateAnimation;
+  late Animation<double> _stickerScaleAnimation;
+  late Animation<double> _stickerRotateAnimation;
 
   @override
   void initState() {
@@ -46,6 +49,10 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     );
     _catAnimationController = AnimationController(
       duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    );
+    _stickerAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
     
@@ -63,6 +70,14 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     _catRotateAnimation = Tween<double>(begin: -0.1, end: 0.1).animate(
       CurvedAnimation(parent: _catAnimationController, curve: Curves.easeInOut),
     );
+
+    // 스티커 애니메이션
+    _stickerScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _stickerAnimationController, curve: Curves.elasticOut),
+    );
+    _stickerRotateAnimation = Tween<double>(begin: -0.5, end: 0.5).animate(
+      CurvedAnimation(parent: _stickerAnimationController, curve: Curves.easeInOut),
+    );
     
     _animationController.forward();
     _catAnimationController.repeat(reverse: true);
@@ -71,7 +86,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final scaffold = ScaffoldMessenger.of(context);
       try {
-        scaffold.showSnackBar(const SnackBar(content: Text('프로필 저장 중...'), duration: Duration(seconds: 1)));
+        scaffold.showSnackBar(const SnackBar(content: Text('saving profile...'), duration: Duration(seconds: 1)));
         final auth = context.read<AuthProvider>();
         final profile = await auth.fetchUserProfile() ?? UserProfile(name: auth.nickname);
         final updated = profile.copyWith(
@@ -79,6 +94,19 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
           totalProblems: profile.totalProblems + widget.totalProblems,
         );
         await auth.saveUserProfile(updated);
+        
+        // 100점 달성 시 스티커 수집
+        final score = (widget.correctAnswers / widget.totalProblems * 100).round();
+        if (score == 100 && widget.selectedLevel != null) {
+          final stickerName = _getStickerNameForLevel(widget.selectedLevel!);
+          if (stickerName != null) {
+            await auth.addStickerToCollection(stickerName);
+            // 스티커 애니메이션 시작
+            _stickerAnimationController.forward();
+            scaffold.showSnackBar(const SnackBar(content: Text('새로운 스티커를 획득했습니다!'), duration: Duration(seconds: 2)));
+          }
+        }
+        
         scaffold.showSnackBar(const SnackBar(content: Text('프로필이 저장되었습니다!'), duration: Duration(seconds: 1)));
       } catch (e) {
         scaffold.showSnackBar(const SnackBar(content: Text('프로필 저장에 실패했습니다.'), duration: Duration(seconds: 2)));
@@ -90,6 +118,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
   void dispose() {
     _animationController.dispose();
     _catAnimationController.dispose();
+    _stickerAnimationController.dispose();
     super.dispose();
   }
 
@@ -311,58 +340,142 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
   }
 
   Widget _buildRewardDisplay(int score) {
-    List<String> rewards = [];
-    
-    if (score >= 90) {
-      rewards = ['🏆', '⭐', '🎖️'];
-    } else if (score >= 70) {
-      rewards = ['⭐', '🎖️'];
-    } else if (score >= 50) {
-      rewards = ['🎖️'];
+    // 100점 미달성 시 below100scores.png 표시
+    if (score < 100) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          children: [
+            Text(
+              'Keep trying!',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF8B5CF6),
+                shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Image.asset(
+              'assets/images/below100scores.png',
+              height: 80,
+              width: 80,
+            ),
+          ],
+        ),
+      );
     }
 
-    if (rewards.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    // 100점 달성 시 레벨별 스티커 보상 (애니메이션 적용)
+    final currentLevel = widget.selectedLevel;
+    if (currentLevel == null) return const SizedBox.shrink();
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          Text(
-            'Rewards Earned!',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF8B5CF6),
-              shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+    final stickerImage = _getStickerForLevel(currentLevel);
+    if (stickerImage == null) return const SizedBox.shrink();
+
+    return AnimatedBuilder(
+      animation: _stickerAnimationController,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _stickerScaleAnimation.value,
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            decoration: const BoxDecoration(
+              color: Colors.transparent,
+            ),
+            child: Column(
+              children: [
+                Text(
+                  '🎉 Congratulations! You earned a sticker! 🎉',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF8B5CF6),
+                    shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Center(
+                  child: Image.asset(
+                    stickerImage,
+                    height: 200,
+                    width: 200,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (score >= 90) ...[
-                const Text('🏆', style: TextStyle(fontSize: 32, color: Color(0xFFFDE047))),
-                SizedBox(width: 8),
-              ],
-              if (score >= 70) ...[
-                const Text('⭐', style: TextStyle(fontSize: 32, color: Color(0xFFFDE047))),
-                SizedBox(width: 8),
-              ],
-              if (score >= 90) ...[
-                const Text('🏅', style: TextStyle(fontSize: 32, color: Color(0xFF8B5CF6))),
-              ],
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
+  }
+
+  String? _getStickerForLevel(GameLevel level) {
+    switch (level) {
+      case GameLevel.level1:
+        return 'assets/images/lv1.png';
+      case GameLevel.level2:
+        return 'assets/images/lv2.png';
+      case GameLevel.level3:
+        return 'assets/images/lv3.png';
+      case GameLevel.level4:
+        return 'assets/images/lv4.png';
+      case GameLevel.level5:
+        return 'assets/images/lv5.png';
+      case GameLevel.level6:
+        return 'assets/images/lv6.png';
+      case GameLevel.level7:
+        return 'assets/images/lv7.png';
+      case GameLevel.level8:
+        return 'assets/images/lv8.png';
+      case GameLevel.level9:
+        return 'assets/images/lv9.png';
+      case GameLevel.level10:
+        return 'assets/images/lv10.png';
+      case GameLevel.level11:
+        return 'assets/images/lv11.png';
+      case GameLevel.level12:
+        return 'assets/images/lv12.png';
+      default:
+        return null;
+    }
+  }
+
+  String? _getStickerNameForLevel(GameLevel level) {
+    switch (level) {
+      case GameLevel.level1:
+        return 'lv1_sticker';
+      case GameLevel.level2:
+        return 'lv2_sticker';
+      case GameLevel.level3:
+        return 'lv3_sticker';
+      case GameLevel.level4:
+        return 'lv4_sticker';
+      case GameLevel.level5:
+        return 'lv5_sticker';
+      case GameLevel.level6:
+        return 'lv6_sticker';
+      case GameLevel.level7:
+        return 'lv7_sticker';
+      case GameLevel.level8:
+        return 'lv8_sticker';
+      case GameLevel.level9:
+        return 'lv9_sticker';
+      case GameLevel.level10:
+        return 'lv10_sticker';
+      case GameLevel.level11:
+        return 'lv11_sticker';
+      case GameLevel.level12:
+        return 'lv12_sticker';
+      default:
+        return null;
+    }
   }
 
   Widget _buildActionButtons() {

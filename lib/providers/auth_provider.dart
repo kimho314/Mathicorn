@@ -148,4 +148,32 @@ class AuthProvider with ChangeNotifier {
     }
     return UserSettings.fromJson(res);
   }
+
+  Future<void> addStickerToCollection(String stickerName) async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) throw Exception('No logged in user');
+    
+    // 현재 프로필 가져오기
+    final currentProfile = await fetchUserProfile();
+    if (currentProfile == null) throw Exception('Failed to fetch user profile');
+    
+    // 이미 수집된 스티커인지 확인
+    if (currentProfile.collectedStickers.contains(stickerName)) {
+      print('Sticker $stickerName already collected');
+      return;
+    }
+    
+    // 새로운 스티커 추가
+    final updatedStickers = List<String>.from(currentProfile.collectedStickers)..add(stickerName);
+    final updatedProfile = currentProfile.copyWith(collectedStickers: updatedStickers);
+    
+    // Supabase에 저장
+    await saveUserProfile(updatedProfile);
+    print('Sticker $stickerName added to collection');
+  }
+
+  Future<List<String>> getCollectedStickers() async {
+    final profile = await fetchUserProfile();
+    return profile?.collectedStickers ?? [];
+  }
 } 
