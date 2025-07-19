@@ -44,20 +44,20 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 600), // 1000ms → 600ms
       vsync: this,
     );
     _catAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1200), // 2000ms → 1200ms
       vsync: this,
     );
     _stickerAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 800), // 1500ms → 800ms
       vsync: this,
     );
     
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate( // 0.5 → 0.8로 시작값 조정
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut), // elasticOut → easeOut
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
@@ -65,51 +65,28 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     
     // 고양이 애니메이션
     _catBounceAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _catAnimationController, curve: Curves.bounceInOut),
+      CurvedAnimation(parent: _catAnimationController, curve: Curves.easeInOut), // bounceInOut → easeInOut
     );
-    _catRotateAnimation = Tween<double>(begin: -0.1, end: 0.1).animate(
+    _catRotateAnimation = Tween<double>(begin: -0.05, end: 0.05).animate( // -0.1, 0.1 → -0.05, 0.05
       CurvedAnimation(parent: _catAnimationController, curve: Curves.easeInOut),
     );
 
     // 스티커 애니메이션
     _stickerScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _stickerAnimationController, curve: Curves.elasticOut),
+      CurvedAnimation(parent: _stickerAnimationController, curve: Curves.easeOut), // elasticOut → easeOut
     );
-    _stickerRotateAnimation = Tween<double>(begin: -0.5, end: 0.5).animate(
+    _stickerRotateAnimation = Tween<double>(begin: -0.2, end: 0.2).animate( // -0.5, 0.5 → -0.2, 0.2
       CurvedAnimation(parent: _stickerAnimationController, curve: Curves.easeInOut),
     );
     
     _animationController.forward();
     _catAnimationController.repeat(reverse: true);
 
-    // 게임 결과를 UserProfile에 반영하고 Supabase에 저장 (로딩/에러 피드백 추가)
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final scaffold = ScaffoldMessenger.of(context);
-      try {
-        scaffold.showSnackBar(const SnackBar(content: Text('saving profile...'), duration: Duration(seconds: 1)));
-        final auth = context.read<AuthProvider>();
-        final profile = await auth.fetchUserProfile() ?? UserProfile(name: auth.nickname);
-        final updated = profile.copyWith(
-          totalScore: profile.totalScore + widget.correctAnswers,
-          totalProblems: profile.totalProblems + widget.totalProblems,
-        );
-        await auth.saveUserProfile(updated);
-        
-        // 100점 달성 시 스티커 수집
-        final score = (widget.correctAnswers / widget.totalProblems * 100).round();
-        if (score == 100 && widget.selectedLevel != null) {
-          final stickerName = _getStickerNameForLevel(widget.selectedLevel!);
-          if (stickerName != null) {
-            await auth.addStickerToCollection(stickerName);
-            // 스티커 애니메이션 시작
-            _stickerAnimationController.forward();
-            scaffold.showSnackBar(const SnackBar(content: Text('새로운 스티커를 획득했습니다!'), duration: Duration(seconds: 2)));
-          }
-        }
-        
-        scaffold.showSnackBar(const SnackBar(content: Text('프로필이 저장되었습니다!'), duration: Duration(seconds: 1)));
-      } catch (e) {
-        scaffold.showSnackBar(const SnackBar(content: Text('프로필 저장에 실패했습니다.'), duration: Duration(seconds: 2)));
+    // 100점 달성 시 스티커 애니메이션 시작 (데이터는 이미 MainShell에서 저장됨)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final score = (widget.correctAnswers / widget.totalProblems * 100).round();
+      if (score == 100 && widget.selectedLevel != null) {
+        _stickerAnimationController.forward();
       }
     });
   }
@@ -124,6 +101,12 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    // 계산을 미리 수행하여 반복 계산 방지
+    final correctAnswers = widget.correctAnswers;
+    final totalProblems = widget.totalProblems;
+    final score = (correctAnswers / totalProblems * 100).round();
+    final duration = widget.duration;
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Result'),
@@ -160,62 +143,44 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
             ),
             padding: const EdgeInsets.all(24),
             child: SingleChildScrollView(
-              child: Builder(
-                builder: (context) {
-                  final correctAnswers = widget.correctAnswers;
-                  final totalProblems = widget.totalProblems;
-                  final score = (correctAnswers / totalProblems * 100).round();
-                  final duration = widget.duration;
-                  return AnimatedBuilder(
-                    animation: _animationController,
-                    builder: (context, child) {
-                      return Transform.scale(
-                        scale: _scaleAnimation.value,
-                        child: Opacity(
-                          opacity: _fadeAnimation.value,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Game Result',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              if (score >= 90) _buildDancingCat(),
-                              if (score < 90) _buildResultEmoji(score),
-                              if (score >= 90) ...[
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Perfect!',
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
-                                  ),
-                                ),
-                              ],
-                              const SizedBox(height: 24),
-                              _buildScoreDisplay(score, correctAnswers, totalProblems),
-                              const SizedBox(height: 32),
-                              if (duration != null) ...[
-                                _buildTimeDisplay(duration),
-                                const SizedBox(height: 32),
-                              ],
-                              _buildRewardDisplay(score),
-                              const SizedBox(height: 40),
-                              _buildActionButtons(),
-                              const SizedBox(height: 40),
-                            ],
+              child: AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: Opacity(
+                      opacity: _fadeAnimation.value,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center, // start → center로 변경
+                        children: [
+                          const Text(
+                            'Game Result',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+                            ),
+                            textAlign: TextAlign.center, // 중앙 정렬 추가
                           ),
-                        ),
-                      );
-                    },
+                          const SizedBox(height: 24),
+                          if (score == 100) _buildPerfectScoreMessage(),
+                          if (score >= 90 && score < 100) _buildExcellentMessage(),
+                          if (score < 90) _buildResultEmoji(score),
+                          const SizedBox(height: 24),
+                          _buildScoreDisplay(score, correctAnswers, totalProblems),
+                          const SizedBox(height: 32),
+                          if (duration != null) ...[
+                            _buildTimeDisplay(duration),
+                            const SizedBox(height: 32),
+                          ],
+                          _buildRewardDisplay(score),
+                          const SizedBox(height: 40),
+                          _buildActionButtons(),
+                          const SizedBox(height: 40),
+                        ],
+                      ),
+                    ),
                   );
                 },
               ),
@@ -227,37 +192,29 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
   }
 
   Widget _buildResultEmoji(int score) {
-    String emoji;
     String message;
     
     if (score >= 90) {
-      emoji = '🐱';
       message = 'Perfect!';
     } else if (score >= 70) {
-      emoji = '👏';
       message = 'Great job!';
     } else if (score >= 50) {
-      emoji = '👍';
       message = 'Good!';
     } else {
-      emoji = '💪';
       message = 'Try again!';
     }
 
     return Column(
       children: [
         Text(
-          emoji,
-          style: const TextStyle(fontSize: 80),
-        ),
-        const SizedBox(height: 8),
-        Text(
           message,
           style: const TextStyle(
-            fontSize: 24,
+            fontSize: 32, // 24 → 32로 크기 증가
             fontWeight: FontWeight.bold,
             color: Colors.white,
+            shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)], // 그림자 추가
           ),
+          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -363,8 +320,11 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
             const SizedBox(height: 12),
             Image.asset(
               'assets/images/below100scores.png',
-              height: 80,
-              width: 80,
+              height: 200, // 60 → 200
+              width: 200,  // 60 → 200
+              fit: BoxFit.contain,
+              cacheWidth: 400, // 120 → 400 (2x for high DPI displays)
+              cacheHeight: 400, // 120 → 400 (2x for high DPI displays)
             ),
           ],
         ),
@@ -404,8 +364,11 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                 Center(
                   child: Image.asset(
                     stickerImage,
-                    height: 200,
-                    width: 200,
+                    height: 160, // 200 → 160
+                    width: 160,  // 200 → 160
+                    fit: BoxFit.contain, // 추가
+                    cacheWidth: 320, // 2x for high DPI displays
+                    cacheHeight: 320,
                   ),
                 ),
               ],
@@ -567,7 +530,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
       animation: _catAnimationController,
       builder: (context, child) {
         return Transform.translate(
-          offset: Offset(0, -20 * _catBounceAnimation.value),
+          offset: Offset(0, -10 * _catBounceAnimation.value), // -20 → -10
           child: Transform.rotate(
             angle: _catRotateAnimation.value,
             child: Container(
@@ -592,158 +555,82 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // 고양이
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // 고양이 귀 (왼쪽)
-                      Transform.rotate(
-                        angle: _catRotateAnimation.value * 0.5,
-                        child: Container(
-                          width: 0,
-                          height: 0,
-                          decoration: const BoxDecoration(
-                            border: Border(
-                              left: BorderSide(color: Colors.orange, width: 12),
-                              right: BorderSide(color: Colors.transparent, width: 12),
-                              bottom: BorderSide(color: Colors.transparent, width: 16),
+                  // 단순화된 고양이
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.orange[200],
+                      borderRadius: BorderRadius.circular(40),
+                      border: Border.all(color: Colors.orange[400]!, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.orange[300]!.withOpacity(0.3),
+                          blurRadius: 8, // 10 → 8
+                          offset: const Offset(0, 4), // 0, 5 → 0, 4
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      children: [
+                        // 고양이 눈 (단순화)
+                        Positioned(
+                          top: 20,
+                          left: 15,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(6),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      // 고양이 얼굴
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: Colors.orange[200],
-                          borderRadius: BorderRadius.circular(40),
-                          border: Border.all(color: Colors.orange[400]!, width: 3),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.orange[300]!.withOpacity(0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: Stack(
-                          children: [
-                            // 고양이 눈
-                            Positioned(
-                              top: 20,
-                              left: 15,
-                              child: Container(
-                                width: 12,
-                                height: 12,
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              top: 20,
-                              right: 15,
-                              child: Container(
-                                width: 12,
-                                height: 12,
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                              ),
-                            ),
-                            // 고양이 코
-                            Positioned(
-                              top: 35,
-                              left: 0,
-                              right: 0,
-                              child: Center(
-                                child: Container(
-                                  width: 8,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: Colors.pink[300],
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            // 고양이 입
-                            Positioned(
-                              bottom: 15,
-                              left: 0,
-                              right: 0,
-                              child: Center(
-                                child: Container(
-                                  width: 20,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            // 고양이 볼
-                            Positioned(
-                              top: 30,
-                              left: 8,
-                              child: Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: Colors.pink[200],
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              top: 30,
-                              right: 8,
-                              child: Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: Colors.pink[200],
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      // 고양이 귀 (오른쪽)
-                      Transform.rotate(
-                        angle: -_catRotateAnimation.value * 0.5,
-                        child: Container(
-                          width: 0,
-                          height: 0,
-                          decoration: const BoxDecoration(
-                            border: Border(
-                              left: BorderSide(color: Colors.orange, width: 12),
-                              right: BorderSide(color: Colors.transparent, width: 12),
-                              bottom: BorderSide(color: Colors.transparent, width: 16),
+                        Positioned(
+                          top: 20,
+                          right: 15,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(6),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // 고양이 꼬리
-                  Transform.rotate(
-                    angle: _catRotateAnimation.value * 2,
-                    child: Container(
-                      width: 40,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: Colors.orange[300],
-                        borderRadius: BorderRadius.circular(4),
-                      ),
+                        // 고양이 코
+                        Positioned(
+                          top: 35,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: Container(
+                              width: 8,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: Colors.pink[300],
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // 고양이 입
+                        Positioned(
+                          bottom: 15,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: Container(
+                              width: 20,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -752,6 +639,65 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
           ),
         );
       },
+    );
+  }
+
+  Widget _buildPerfectScoreMessage() {
+    return Column(
+      children: [
+        Text(
+          "You're a super-duper math star!",
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.yellow[100],
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.yellow[400]!, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.yellow[300]!.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Text(
+            '🌟 Perfect Score! 🌟',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.orange,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExcellentMessage() {
+    return Column(
+      children: [
+        Text(
+          "Little math bunny, you hopped all the way to 99",
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 } 

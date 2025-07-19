@@ -546,7 +546,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       final correctAnswers = gameProvider.correctAnswers;
       final totalProblems = gameProvider.totalProblems;
       final duration = gameProvider.gameDuration;
-      // 통계 최종 저장 (로그인 유저만)
+      // 통계 최종 저장 (로그인 유저만) - 프로필과 스티커는 MainShell에서 처리
       final auth = Provider.of<AuthProvider>(context, listen: false);
       if (auth.isLoggedIn && auth.user != null) {
         final statisticsProvider = Provider.of<StatisticsProvider>(context, listen: false);

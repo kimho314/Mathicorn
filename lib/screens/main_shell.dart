@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 import '../utils/unicorn_theme.dart';
 import '../providers/game_provider.dart';
 import 'package:Mathicorn/models/math_problem.dart';
+import 'package:Mathicorn/models/user_profile.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -51,16 +52,43 @@ class _MainShellState extends State<MainShell> {
     MainShell.setTabIndex = (int idx) {
       if (mounted) setState(() => _selectedIndex = idx);
     };
-    MainShell.showResultScreen = (int correctAnswers, int totalProblems, Duration? duration, GameLevel? level) {
+    MainShell.showResultScreen = (int correctAnswers, int totalProblems, Duration? duration, GameLevel? level) async {
       if (_instance != null && _instance!.mounted) {
-        _instance!.setState(() {
-          _instance!._resultScreenData = {
-            'correctAnswers': correctAnswers,
-            'totalProblems': totalProblems,
-            'duration': duration,
-            'selectedLevel': level,
-          };
-        });
+        // ResultScreen을 표시하기 전에 데이터 저장 완료
+        try {
+          final auth = Provider.of<AuthProvider>(_instance!.context, listen: false);
+          final profile = await auth.fetchUserProfile() ?? UserProfile(name: auth.nickname);
+          final updated = profile.copyWith(
+            totalScore: profile.totalScore + correctAnswers,
+            totalProblems: profile.totalProblems + totalProblems,
+          );
+          await auth.saveUserProfile(updated);
+          
+          // 100점 달성 시 스티커 수집
+          final score = (correctAnswers / totalProblems * 100).round();
+          if (score == 100 && level != null) {
+            final stickerName = _getStickerNameForLevel(level);
+            if (stickerName != null) {
+              await auth.addStickerToCollection(stickerName);
+            }
+          }
+          
+          print('[MainShell] Profile and sticker data saved successfully before showing ResultScreen');
+        } catch (e) {
+          print('[MainShell] Failed to save profile data before showing ResultScreen: $e');
+        }
+        
+        // 데이터 저장 완료 후 ResultScreen 표시
+        if (_instance != null && _instance!.mounted) {
+          _instance!.setState(() {
+            _instance!._resultScreenData = {
+              'correctAnswers': correctAnswers,
+              'totalProblems': totalProblems,
+              'duration': duration,
+              'selectedLevel': level,
+            };
+          });
+        }
       }
     };
   }
@@ -163,5 +191,36 @@ class _MainShellState extends State<MainShell> {
         destinations: [for (final i in visibleTabIndices) allDestinations[i]],
       ),
     );
+  }
+
+  String? _getStickerNameForLevel(GameLevel level) {
+    switch (level) {
+      case GameLevel.level1:
+        return 'lv1_sticker';
+      case GameLevel.level2:
+        return 'lv2_sticker';
+      case GameLevel.level3:
+        return 'lv3_sticker';
+      case GameLevel.level4:
+        return 'lv4_sticker';
+      case GameLevel.level5:
+        return 'lv5_sticker';
+      case GameLevel.level6:
+        return 'lv6_sticker';
+      case GameLevel.level7:
+        return 'lv7_sticker';
+      case GameLevel.level8:
+        return 'lv8_sticker';
+      case GameLevel.level9:
+        return 'lv9_sticker';
+      case GameLevel.level10:
+        return 'lv10_sticker';
+      case GameLevel.level11:
+        return 'lv11_sticker';
+      case GameLevel.level12:
+        return 'lv12_sticker';
+      default:
+        return null;
+    }
   }
 } 
