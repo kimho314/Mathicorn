@@ -444,8 +444,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         }
       });
     } else {
-      // 오답일 때: 1초 후 다이얼로그 표시
-      Future.delayed(const Duration(milliseconds: 1000), () {
+      // 오답일 때: 0.3초 후 다이얼로그 표시
+      Future.delayed(const Duration(milliseconds: 300), () {
         if (mounted) {
           _showWrongAnswerDialog(problem, gameProvider);
         }
