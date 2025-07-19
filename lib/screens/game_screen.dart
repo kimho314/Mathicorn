@@ -601,8 +601,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Lottie.asset('assets/animations/star.json', width: 60, repeat: false),
-            const SizedBox(height: 12),
             const Text(
               'You can try again or check the correct answer.',
               style: TextStyle(fontSize: 18, color: Color(0xFF512DA8)),
