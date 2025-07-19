@@ -172,7 +172,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Result'),
+        title: const Text('Game Result'),
         leading: widget.onClose != null
             ? IconButton(
                 icon: const Icon(Icons.close),
@@ -372,17 +372,6 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center, // start → center로 변경
                       children: [
-                        const Text(
-                          'Game Result',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
-                          ),
-                          textAlign: TextAlign.center, // 중앙 정렬 추가
-                        ),
-                        const SizedBox(height: 24),
                         if (score == 100) _buildPerfectScoreMessage(),
                         if (score >= 90 && score < 100) _buildExcellentMessage(),
                         if (score < 90) _buildResultEmoji(score),
