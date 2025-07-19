@@ -492,19 +492,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Lottie.asset('assets/animations/star.json', width: 60, repeat: false),
-              const SizedBox(height: 12),
-              const Wrap(
-                alignment: WrapAlignment.center,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Text(
-                    'You got the correct answer!',
-                    style: TextStyle(fontSize: 18, color: Color(0xFF512DA8)),
-                  ),
-                  SizedBox(width: 8),
-                  Text('🌟', style: TextStyle(fontSize: 20)),
-                ],
+              const Text(
+                'You got the correct answer!',
+                style: TextStyle(fontSize: 18, color: Color(0xFF512DA8)),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
