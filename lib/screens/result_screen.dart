@@ -906,7 +906,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     return Column(
       children: [
         Text(
-          "Little math bunny, you hopped all the way to 99",
+          "You counted like a clever kitty—meowgical job!",
           style: const TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,

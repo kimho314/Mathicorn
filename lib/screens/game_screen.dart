@@ -123,9 +123,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               final isResultScreen = ModalRoute.of(context)?.settings.name == 'ResultScreen';
               final isCurrent = ModalRoute.of(context)?.isCurrent ?? true;
               if (!gameProvider.isGameActive && !isResultScreen && isCurrent) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  MainShell.setTabIndex?.call(0); // 홈으로 이동
-                });
+                // 게임이 끝났을 때는 홈으로 이동하지 않고 ResultScreen을 기다림
                 return const Center(child: CircularProgressIndicator());
               }
 
@@ -554,9 +552,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       }
       final lastLevel = gameProvider.problems.isNotEmpty ? gameProvider.problems.last.level : null;
       print('GameScreen: lastLevel = ' + (lastLevel?.toString() ?? 'null'));
-      Future.delayed(const Duration(milliseconds: 300), () {
-        MainShell.showResultScreen?.call(correctAnswers, totalProblems, duration, lastLevel);
-      });
+      // 즉시 ResultScreen 호출 (지연 시간 제거)
+      MainShell.showResultScreen?.call(correctAnswers, totalProblems, duration, lastLevel);
       return;
     }
     
