@@ -54,41 +54,15 @@ class _MainShellState extends State<MainShell> {
     };
     MainShell.showResultScreen = (int correctAnswers, int totalProblems, Duration? duration, GameLevel? level) async {
       if (_instance != null && _instance!.mounted) {
-        // ResultScreen을 표시하기 전에 데이터 저장 완료
-        try {
-          final auth = Provider.of<AuthProvider>(_instance!.context, listen: false);
-          final profile = await auth.fetchUserProfile() ?? UserProfile(name: auth.nickname);
-          final updated = profile.copyWith(
-            totalScore: profile.totalScore + correctAnswers,
-            totalProblems: profile.totalProblems + totalProblems,
-          );
-          await auth.saveUserProfile(updated);
-          
-          // 100점 달성 시 스티커 수집
-          final score = (correctAnswers / totalProblems * 100).round();
-          if (score == 100 && level != null) {
-            final stickerName = _getStickerNameForLevel(level);
-            if (stickerName != null) {
-              await auth.addStickerToCollection(stickerName);
-            }
-          }
-          
-          print('[MainShell] Profile and sticker data saved successfully before showing ResultScreen');
-        } catch (e) {
-          print('[MainShell] Failed to save profile data before showing ResultScreen: $e');
-        }
-        
-        // 데이터 저장 완료 후 ResultScreen 표시
-        if (_instance != null && _instance!.mounted) {
-          _instance!.setState(() {
-            _instance!._resultScreenData = {
-              'correctAnswers': correctAnswers,
-              'totalProblems': totalProblems,
-              'duration': duration,
-              'selectedLevel': level,
-            };
-          });
-        }
+        // ResultScreen을 즉시 표시 (데이터 저장은 ResultScreen에서 처리)
+        _instance!.setState(() {
+          _instance!._resultScreenData = {
+            'correctAnswers': correctAnswers,
+            'totalProblems': totalProblems,
+            'duration': duration,
+            'selectedLevel': level,
+          };
+        });
       }
     };
   }

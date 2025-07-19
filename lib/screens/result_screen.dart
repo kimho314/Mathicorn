@@ -39,10 +39,25 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
   late Animation<double> _catRotateAnimation;
   late Animation<double> _stickerScaleAnimation;
   late Animation<double> _stickerRotateAnimation;
+  
+  // 로딩 상태 관리
+  bool _isLoading = true;
+  late AnimationController _skeletonAnimationController;
+  late Animation<double> _skeletonShimmerAnimation;
 
   @override
   void initState() {
     super.initState();
+    
+    // 스켈레톤 애니메이션 컨트롤러
+    _skeletonAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _skeletonShimmerAnimation = Tween<double>(begin: -1.0, end: 2.0).animate(
+      CurvedAnimation(parent: _skeletonAnimationController, curve: Curves.easeInOut),
+    );
+    
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 600), // 1000ms → 600ms
       vsync: this,
@@ -79,16 +94,63 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
       CurvedAnimation(parent: _stickerAnimationController, curve: Curves.easeInOut),
     );
     
-    _animationController.forward();
-    _catAnimationController.repeat(reverse: true);
+    // 스켈레톤 애니메이션 시작
+    _skeletonAnimationController.repeat();
+    
+    // 데이터 저장 및 로딩 완료 처리
+    _saveDataAndCompleteLoading();
+  }
 
-    // 100점 달성 시 스티커 애니메이션 시작 (데이터는 이미 MainShell에서 저장됨)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+  // 데이터 저장 및 로딩 완료 처리
+  void _saveDataAndCompleteLoading() async {
+    try {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      
+      // 사용자 프로필 업데이트
+      final profile = await auth.fetchUserProfile() ?? UserProfile(name: auth.nickname);
+      final updated = profile.copyWith(
+        totalScore: profile.totalScore + widget.correctAnswers,
+        totalProblems: profile.totalProblems + widget.totalProblems,
+      );
+      await auth.saveUserProfile(updated);
+      
+      // 100점 달성 시 스티커 수집
       final score = (widget.correctAnswers / widget.totalProblems * 100).round();
       if (score == 100 && widget.selectedLevel != null) {
-        _stickerAnimationController.forward();
+        final stickerName = _getStickerNameForLevel(widget.selectedLevel!);
+        if (stickerName != null) {
+          await auth.addStickerToCollection(stickerName);
+        }
       }
-    });
+      
+      print('[ResultScreen] Profile and sticker data saved successfully');
+      
+      // 데이터 저장 완료 후 로딩 해제
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        _skeletonAnimationController.stop();
+        _animationController.forward();
+        _catAnimationController.repeat(reverse: true);
+
+        // 100점 달성 시 스티커 애니메이션 시작
+        if (score == 100 && widget.selectedLevel != null) {
+          _stickerAnimationController.forward();
+        }
+      }
+    } catch (e) {
+      print('[ResultScreen] Failed to save data: $e');
+      // 에러가 발생해도 로딩 해제
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        _skeletonAnimationController.stop();
+        _animationController.forward();
+        _catAnimationController.repeat(reverse: true);
+      }
+    }
   }
 
   @override
@@ -96,6 +158,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     _animationController.dispose();
     _catAnimationController.dispose();
     _stickerAnimationController.dispose();
+    _skeletonAnimationController.dispose();
     super.dispose();
   }
 
@@ -117,73 +180,228 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
               )
             : null,
       ),
-      body: Material(
-        color: Colors.transparent,
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withOpacity(0.25),
-                  Colors.white.withOpacity(0.10),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.10),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
-                ),
+      body: _isLoading ? _buildSkeletonScreen() : _buildResultContent(score, correctAnswers, totalProblems, duration),
+    );
+  }
+
+  // 스켈레톤 화면 위젯
+  Widget _buildSkeletonScreen() {
+    return Material(
+      color: Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.25),
+                Colors.white.withOpacity(0.10),
               ],
             ),
-            padding: const EdgeInsets.all(24),
-            child: SingleChildScrollView(
-              child: AnimatedBuilder(
-                animation: _animationController,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: _scaleAnimation.value,
-                    child: Opacity(
-                      opacity: _fadeAnimation.value,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center, // start → center로 변경
-                        children: [
-                          const Text(
-                            'Game Result',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
-                            ),
-                            textAlign: TextAlign.center, // 중앙 정렬 추가
-                          ),
-                          const SizedBox(height: 24),
-                          if (score == 100) _buildPerfectScoreMessage(),
-                          if (score >= 90 && score < 100) _buildExcellentMessage(),
-                          if (score < 90) _buildResultEmoji(score),
-                          const SizedBox(height: 24),
-                          _buildScoreDisplay(score, correctAnswers, totalProblems),
-                          const SizedBox(height: 32),
-                          if (duration != null) ...[
-                            _buildTimeDisplay(duration),
-                            const SizedBox(height: 32),
-                          ],
-                          _buildRewardDisplay(score),
-                          const SizedBox(height: 40),
-                          _buildActionButtons(),
-                          const SizedBox(height: 40),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.10),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
               ),
+            ],
+          ),
+          padding: const EdgeInsets.all(24),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // 제목 스켈레톤
+                _buildSkeletonText(200, 24),
+                const SizedBox(height: 24),
+                // 메시지 스켈레톤
+                _buildSkeletonText(300, 32),
+                const SizedBox(height: 24),
+                // 점수 표시 스켈레톤
+                _buildSkeletonContainer(200, 120),
+                const SizedBox(height: 32),
+                // 시간 표시 스켈레톤
+                _buildSkeletonContainer(180, 60),
+                const SizedBox(height: 32),
+                // 보상 표시 스켈레톤
+                _buildSkeletonContainer(200, 200),
+                const SizedBox(height: 40),
+                // 버튼 스켈레톤
+                _buildSkeletonButton(),
+                const SizedBox(height: 16),
+                _buildSkeletonButton(),
+                const SizedBox(height: 20), // 하단 여백 추가
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 스켈레톤 텍스트 위젯
+  Widget _buildSkeletonText(double width, double height) {
+    return AnimatedBuilder(
+      animation: _skeletonAnimationController,
+      builder: (context, child) {
+        return Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(height / 2),
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                Colors.white.withOpacity(0.1),
+                Colors.white.withOpacity(0.3),
+                Colors.white.withOpacity(0.1),
+              ],
+              stops: [
+                0.0,
+                (_skeletonShimmerAnimation.value + 1.0) / 3.0,
+                1.0,
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // 스켈레톤 컨테이너 위젯
+  Widget _buildSkeletonContainer(double width, double height) {
+    return AnimatedBuilder(
+      animation: _skeletonAnimationController,
+      builder: (context, child) {
+        return Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                Colors.white.withOpacity(0.05),
+                Colors.white.withOpacity(0.2),
+                Colors.white.withOpacity(0.05),
+              ],
+              stops: [
+                0.0,
+                (_skeletonShimmerAnimation.value + 1.0) / 3.0,
+                1.0,
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // 스켈레톤 버튼 위젯
+  Widget _buildSkeletonButton() {
+    return AnimatedBuilder(
+      animation: _skeletonAnimationController,
+      builder: (context, child) {
+        return Container(
+          width: double.infinity,
+          height: 56,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                Colors.white.withOpacity(0.1),
+                Colors.white.withOpacity(0.3),
+                Colors.white.withOpacity(0.1),
+              ],
+              stops: [
+                0.0,
+                (_skeletonShimmerAnimation.value + 1.0) / 3.0,
+                1.0,
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // 결과 콘텐츠 위젯
+  Widget _buildResultContent(int score, int correctAnswers, int totalProblems, Duration? duration) {
+    return Material(
+      color: Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.25),
+                Colors.white.withOpacity(0.10),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.10),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(24),
+          child: SingleChildScrollView(
+            child: AnimatedBuilder(
+              animation: _animationController,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: Opacity(
+                    opacity: _fadeAnimation.value,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center, // start → center로 변경
+                      children: [
+                        const Text(
+                          'Game Result',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+                          ),
+                          textAlign: TextAlign.center, // 중앙 정렬 추가
+                        ),
+                        const SizedBox(height: 24),
+                        if (score == 100) _buildPerfectScoreMessage(),
+                        if (score >= 90 && score < 100) _buildExcellentMessage(),
+                        if (score < 90) _buildResultEmoji(score),
+                        const SizedBox(height: 24),
+                        _buildScoreDisplay(score, correctAnswers, totalProblems),
+                        const SizedBox(height: 32),
+                        if (duration != null) ...[
+                          _buildTimeDisplay(duration),
+                          const SizedBox(height: 32),
+                        ],
+                        _buildRewardDisplay(score),
+                        const SizedBox(height: 40),
+                        _buildActionButtons(),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ),
