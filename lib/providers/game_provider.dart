@@ -454,20 +454,27 @@ class GameProvider extends ChangeNotifier {
     if (isCorrect) {
       _correctAnswers++;
     } else {
-      // 오답 기록 저장
+      // 오답 기록 저장 (중복 처리 로직은 WrongNoteProvider에서 처리)
       final userId = Supabase.instance.client.auth.currentUser?.id;
+      print('Debug: User answered incorrectly. User ID: $userId');
       if (wrongNoteProvider != null && userId != null) {
+        print('Debug: Creating wrong answer record');
         final wrongAnswer = WrongAnswer(
-          id: const Uuid().v4(),
+          id: '0', // ID는 데이터베이스에서 자동 생성
           userId: userId,
           questionText: currentProblem.questionText,
           userAnswer: selectedAnswer.toString(),
           correctAnswer: currentProblem.correctAnswer.toString(),
-          operationType: currentProblem.operationText,
+          operationType: currentProblem.displayOperationText, // 혼합 연산 처리
           level: currentProblem.level != null ? currentProblem.level!.index + 1 : null,
+          count: 1, // 기본값, 중복 시 WrongNoteProvider에서 증가
           createdAt: DateTime.now(),
+          updatedAt: DateTime.now(), // updated_at도 설정
         );
+        print('Debug: Wrong answer created: ${wrongAnswer.questionText}');
         wrongNoteProvider!.addWrongAnswer(wrongAnswer);
+      } else {
+        print('Debug: Cannot save wrong answer - wrongNoteProvider: ${wrongNoteProvider != null}, userId: $userId');
       }
     }
     notifyListeners();

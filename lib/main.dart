@@ -50,88 +50,98 @@ class FunnyCalcApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => WrongNoteProvider()),
         ChangeNotifierProvider(create: (_) => StatisticsProvider()),
       ],
-      child: MaterialApp(
-        title: 'Mathicorn',
-        theme: ThemeData(
-          colorScheme: ColorScheme(
-            brightness: Brightness.light,
-            primary: const Color(0xFF8B5CF6), // purple
-            onPrimary: Colors.white,
-            secondary: const Color(0xFF06B6D4), // cyan
-            onSecondary: Colors.white,
-            error: const Color(0xFFEC4899), // pink
-            onError: Colors.white,
-            background: const Color(0xFFF8FAFC), // lightGray
-            onBackground: const Color(0xFF1E293B), // darkText
-            surface: Colors.white,
-            onSurface: const Color(0xFF64748B), // textGray
-          ),
-          scaffoldBackgroundColor: Colors.transparent,
-          fontFamily: 'NotoSansKR',
-          textTheme: GoogleFonts.baloo2TextTheme().copyWith(
-            headlineLarge: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 32,
-              shadows: [Shadow(offset: Offset(2,2), blurRadius: 4, color: Colors.black26)],
+      child: Consumer<AuthProvider>(
+        builder: (context, authProvider, child) {
+          // AuthProvider와 WrongNoteProvider 연결
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final wrongNoteProvider = context.read<WrongNoteProvider>();
+            authProvider.setWrongNoteProvider(wrongNoteProvider);
+          });
+          
+          return MaterialApp(
+            title: 'Mathicorn',
+            theme: ThemeData(
+              colorScheme: ColorScheme(
+                brightness: Brightness.light,
+                primary: const Color(0xFF8B5CF6), // purple
+                onPrimary: Colors.white,
+                secondary: const Color(0xFF06B6D4), // cyan
+                onSecondary: Colors.white,
+                error: const Color(0xFFEC4899), // pink
+                onError: Colors.white,
+                background: const Color(0xFFF8FAFC), // lightGray
+                onBackground: const Color(0xFF1E293B), // darkText
+                surface: Colors.white,
+                onSurface: const Color(0xFF64748B), // textGray
+              ),
+              scaffoldBackgroundColor: Colors.transparent,
+              fontFamily: 'NotoSansKR',
+              textTheme: GoogleFonts.baloo2TextTheme().copyWith(
+                headlineLarge: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 32,
+                  shadows: [Shadow(offset: Offset(2,2), blurRadius: 4, color: Colors.black26)],
+                ),
+                titleLarge: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 20,
+                  shadows: [Shadow(offset: Offset(2,2), blurRadius: 4, color: Colors.black12)],
+                ),
+                bodyLarge: const TextStyle(
+                  color: Color(0xFF1E293B),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
+                bodyMedium: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: 14,
+                ),
+              ).apply(
+                fontFamilyFallback: ['NotoSansKR', 'sans-serif'],
+              ),
+              cardTheme: CardThemeData(
+                color: Colors.white.withOpacity(0.25),
+                elevation: 6,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                shadowColor: const Color(0xFF8B5CF6).withOpacity(0.1),
+                margin: const EdgeInsets.all(8),
+              ),
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                foregroundColor: Colors.white,
+                centerTitle: true,
+                titleTextStyle: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22,
+                  shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+                ),
+              ),
+              navigationBarTheme: NavigationBarThemeData(
+                backgroundColor: Colors.white.withOpacity(0.15),
+                indicatorColor: const Color(0xFF8B5CF6).withOpacity(0.15),
+                labelTextStyle: MaterialStateProperty.all(const TextStyle(
+                  color: Color(0xFF8B5CF6),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                )),
+                iconTheme: MaterialStateProperty.all(const IconThemeData(
+                  color: Color(0xFF8B5CF6),
+                  size: 28,
+                )),
+              ),
             ),
-            titleLarge: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 20,
-              shadows: [Shadow(offset: Offset(2,2), blurRadius: 4, color: Colors.black12)],
+            debugShowCheckedModeBanner: false,
+            home: const _UnicornBackground(
+              child: MainShell(),
             ),
-            bodyLarge: const TextStyle(
-              color: Color(0xFF1E293B),
-              fontWeight: FontWeight.w500,
-              fontSize: 16,
-            ),
-            bodyMedium: const TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 14,
-            ),
-          ).apply(
-            fontFamilyFallback: ['NotoSansKR', 'sans-serif'],
-          ),
-          cardTheme: CardThemeData(
-            color: Colors.white.withOpacity(0.25),
-            elevation: 6,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            shadowColor: const Color(0xFF8B5CF6).withOpacity(0.1),
-            margin: const EdgeInsets.all(8),
-          ),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            foregroundColor: Colors.white,
-            centerTitle: true,
-            titleTextStyle: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 22,
-              shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
-            ),
-          ),
-          navigationBarTheme: NavigationBarThemeData(
-            backgroundColor: Colors.white.withOpacity(0.15),
-            indicatorColor: const Color(0xFF8B5CF6).withOpacity(0.15),
-            labelTextStyle: MaterialStateProperty.all(const TextStyle(
-              color: Color(0xFF8B5CF6),
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            )),
-            iconTheme: MaterialStateProperty.all(const IconThemeData(
-              color: Color(0xFF8B5CF6),
-              size: 28,
-            )),
-          ),
-        ),
-        debugShowCheckedModeBanner: false,
-        home: const _UnicornBackground(
-          child: MainShell(),
-        ),
-        routes: {
-          '/auth': (_) => const AuthScreen(),
+            routes: {
+              '/auth': (_) => const AuthScreen(),
+            },
+          );
         },
       ),
     );

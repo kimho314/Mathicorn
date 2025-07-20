@@ -3,16 +3,33 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:Mathicorn/models/user_profile.dart';
 import 'dart:convert';
 import 'package:Mathicorn/models/user_settings.dart';
+import 'package:Mathicorn/providers/wrong_note_provider.dart';
 
 class AuthProvider with ChangeNotifier {
   User? _user;
+  WrongNoteProvider? _wrongNoteProvider;
 
   AuthProvider() {
     _user = Supabase.instance.client.auth.currentUser;
     Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       _user = data.session?.user;
+      _updateWrongNoteProvider();
       notifyListeners();
     });
+  }
+
+  // WrongNoteProvider 참조 설정
+  void setWrongNoteProvider(WrongNoteProvider provider) {
+    _wrongNoteProvider = provider;
+    _updateWrongNoteProvider();
+  }
+
+  // WrongNoteProvider의 userId 업데이트
+  void _updateWrongNoteProvider() {
+    if (_wrongNoteProvider != null) {
+      _wrongNoteProvider!.userId = _user?.id;
+      print('Debug: Updated WrongNoteProvider userId to: ${_user?.id}');
+    }
   }
 
   User? get user => _user;
@@ -31,16 +48,17 @@ class AuthProvider with ChangeNotifier {
   Future<String?> signIn(String email, String password) async {
     try {
       final res = await Supabase.instance.client.auth.signInWithPassword(email: email, password: password);
-      print('[Supabase Login Result] user: \\${res.user}, session: \\${res.session}');
+      print('[Supabase Login Result] user: ${res.user}, session: ${res.session}');
       if (res.user != null) {
+        _updateWrongNoteProvider();
         return null;
       }
       return 'Login failed';
     } on AuthException catch (e) {
-      print('[Supabase Login AuthException] \\${e.message}');
+      print('[Supabase Login AuthException] ${e.message}');
       return e.message;
     } catch (e) {
-      print('[Supabase Login Exception] \\${e.toString()}');
+      print('[Supabase Login Exception] ${e.toString()}');
       return 'Login failed';
     }
   }
@@ -52,7 +70,7 @@ class AuthProvider with ChangeNotifier {
         password: password,
         data: {'nickname': nickname},
       );
-      print('[Supabase SignUp Result] user: \\${res.user}, session: \\${res.session}');
+      print('[Supabase SignUp Result] user: ${res.user}, session: ${res.session}');
       if (res.user != null) {
         // users 테이블에도 정보 저장
         await Supabase.instance.client.from('users').insert({
@@ -60,6 +78,7 @@ class AuthProvider with ChangeNotifier {
           'email': email,
           'nickname': nickname,
         });
+        _updateWrongNoteProvider();
         return null;
       }
       // 이메일 인증이 필요한 경우
@@ -68,16 +87,17 @@ class AuthProvider with ChangeNotifier {
       }
       return 'Sign up failed';
     } on AuthException catch (e) {
-      print('[Supabase SignUp AuthException] \\${e.message}');
+      print('[Supabase SignUp AuthException] ${e.message}');
       return e.message;
     } catch (e) {
-      print('[Supabase SignUp Exception] \\${e.toString()}');
+      print('[Supabase SignUp Exception] ${e.toString()}');
       return 'Sign up failed';
     }
   }
 
   Future<void> signOut() async {
     await Supabase.instance.client.auth.signOut();
+    _updateWrongNoteProvider();
   }
 
   Future<void> saveUserProfile(UserProfile profile) async {

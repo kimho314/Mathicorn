@@ -1,4 +1,4 @@
-enum OperationType { addition, subtraction, multiplication, division }
+ enum OperationType { addition, subtraction, multiplication, division }
 
 enum GameLevel {
   level1,
@@ -82,6 +82,19 @@ class MathProblem {
       case OperationType.division:
         return '나누기';
     }
+  }
+
+  // 혼합 연산인지 확인하는 getter
+  bool get isMixedOperation {
+    return level == GameLevel.level11 || level == GameLevel.level12;
+  }
+
+  // 혼합 연산의 경우 "혼합"을 반환하는 getter
+  String get displayOperationText {
+    if (isMixedOperation) {
+      return '혼합';
+    }
+    return operationText;
   }
 }
 
