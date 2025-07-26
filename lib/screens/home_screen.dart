@@ -282,10 +282,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 }
 
-class UnicornLoginNotice extends StatelessWidget {
+class UnicornLoginNotice extends StatefulWidget {
   final VoidCallback onLoginTap;
 
   const UnicornLoginNotice({required this.onLoginTap, super.key});
+
+  @override
+  State<UnicornLoginNotice> createState() => _UnicornLoginNoticeState();
+}
+
+class _UnicornLoginNoticeState extends State<UnicornLoginNotice>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -338,28 +370,50 @@ class UnicornLoginNotice extends StatelessWidget {
                   ),
                 ),
                 GestureDetector(
-                  onTap: onLoginTap,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Color(0xFF8B5CF6),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.10),
-                          blurRadius: 8,
-                          offset: Offset(0, 2),
+                  onTapDown: (_) {
+                    setState(() => _isPressed = true);
+                    _animationController.forward();
+                  },
+                  onTapUp: (_) {
+                    setState(() => _isPressed = false);
+                    _animationController.reverse();
+                    widget.onLoginTap();
+                  },
+                  onTapCancel: () {
+                    setState(() => _isPressed = false);
+                    _animationController.reverse();
+                  },
+                  child: AnimatedBuilder(
+                    animation: _scaleAnimation,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: _scaleAnimation.value,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: _isPressed 
+                                ? Color(0xFF7C4DFF) // 눌렀을 때 더 어두운 색상
+                                : Color(0xFF8B5CF6),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(_isPressed ? 0.15 : 0.10),
+                                blurRadius: _isPressed ? 4 : 8,
+                                offset: Offset(0, _isPressed ? 1 : 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            'Login / Sign Up',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
                         ),
-                      ],
-                    ),
-                    child: Text(
-                      'Login / Sign Up',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ),
               ],
