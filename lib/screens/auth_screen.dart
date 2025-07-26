@@ -12,12 +12,35 @@ class AuthScreen extends StatefulWidget {
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateMixin {
+class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   late TabController _tabController;
+  late AnimationController _animationController;
+  late Animation<double> _slideAnimation;
+  
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this, initialIndex: widget.showSignUp ? 1 : 0);
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _slideAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        _animationController.forward(from: 0);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -39,25 +62,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                     const SizedBox(height: 16),
                     Text('Welcome to Mathicorn!', style: UnicornTextStyles.header.copyWith(fontSize: 28)),
                     const SizedBox(height: 16),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: TabBar(
-                        controller: _tabController,
-                        indicator: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          color: UnicornColors.purple.withOpacity(0.7),
-                        ),
-                        labelColor: UnicornColors.white,
-                        unselectedLabelColor: UnicornColors.white.withOpacity(0.7),
-                        tabs: const [
-                          Tab(text: 'Login'),
-                          Tab(text: 'Sign Up'),
-                        ],
-                      ),
-                    ),
+                    _buildCustomTabBar(),
                     const SizedBox(height: 16),
                     SizedBox(
                       height: 320,
@@ -72,6 +77,101 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                   ],
                 ),
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomTabBar() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final tabWidth = constraints.maxWidth / 2;
+        
+        return Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+          ),
+          child: Stack(
+            children: [
+              // Animated indicator
+              AnimatedBuilder(
+                animation: _slideAnimation,
+                builder: (context, child) {
+                  return AnimatedPositioned(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    left: _tabController.index * tabWidth + 4,
+                    top: 4,
+                    bottom: 4,
+                    width: tabWidth - 8,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white.withOpacity(0.25),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.4),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                          BoxShadow(
+                            color: Colors.white.withOpacity(0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              // Tab buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTabButton('Login', 0),
+                  ),
+                  Expanded(
+                    child: _buildTabButton('Sign Up', 1),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTabButton(String text, int index) {
+    final isSelected = _tabController.index == index;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          _tabController.animateTo(index);
+        },
+        child: Container(
+          height: 48,
+          child: Center(
+            child: AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              style: TextStyle(
+                color: isSelected ? UnicornColors.white : UnicornColors.white.withOpacity(0.7),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontSize: 16,
+              ),
+              child: Text(text),
             ),
           ),
         ),
