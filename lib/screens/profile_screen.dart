@@ -231,18 +231,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 16),
           if (userProfile != null) ...[
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Total Score:', style: TextStyle(color: Colors.white)),
-                Text('${userProfile.totalScore}', style: TextStyle(color: Color(0xFFFDE047), fontWeight: FontWeight.bold)),
+                Flexible(
+                  child: Text('Total Score:', style: TextStyle(color: Colors.white)),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text('${userProfile.totalScore}', style: TextStyle(color: Color(0xFFFDE047), fontWeight: FontWeight.bold)),
+                ),
               ],
             ),
             const SizedBox(height: 8),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Total Problems:', style: TextStyle(color: Colors.white)),
-                Text('${userProfile.totalProblems}', style: TextStyle(color: Color(0xFF06B6D4), fontWeight: FontWeight.bold)),
+                Flexible(
+                  child: Text('Total Problems:', style: TextStyle(color: Colors.white)),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text('${userProfile.totalProblems}', style: TextStyle(color: Color(0xFF06B6D4), fontWeight: FontWeight.bold)),
+                ),
               ],
             ),
           ],

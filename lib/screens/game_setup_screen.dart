@@ -90,24 +90,29 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
           child: Column(
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Problems:',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+                  const Flexible(
+                    child: Text(
+                      'Problems:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+                      ),
                     ),
                   ),
-                  Text(
-                    '$_selectedProblemCount problems',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      '$_selectedProblemCount problems',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -128,10 +133,18 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
-                  Text('5 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
-                  Text('10 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
-                  Text('15 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
-                  Text('20 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
+                  Flexible(
+                    child: Text('5 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
+                  ),
+                  Flexible(
+                    child: Text('10 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
+                  ),
+                  Flexible(
+                    child: Text('15 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
+                  ),
+                  Flexible(
+                    child: Text('20 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
+                  ),
                 ],
               ),
             ],

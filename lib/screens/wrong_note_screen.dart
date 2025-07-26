@@ -302,36 +302,42 @@ class _WrongNoteScreenState extends State<WrongNoteScreen> {
                                               const SizedBox(height: 8),
                                               Row(
                                                 children: [
-                                                  Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                    decoration: BoxDecoration(
-                                                      color: const Color(0x40FFFFFF),
-                                                      borderRadius: BorderRadius.circular(8),
-                                                      border: Border.all(color: const Color(0x30FFFFFF)),
-                                                    ),
-                                                    child: Text(
-                                                      'Your: ${wa.userAnswer}',
-                                                      style: const TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w500,
+                                                  Flexible(
+                                                    child: Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(0x40FFFFFF),
+                                                        borderRadius: BorderRadius.circular(8),
+                                                        border: Border.all(color: const Color(0x30FFFFFF)),
+                                                      ),
+                                                      child: Text(
+                                                        'Your: ${wa.userAnswer}',
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
+                                                        ),
+                                                        overflow: TextOverflow.ellipsis,
                                                       ),
                                                     ),
                                                   ),
                                                   const SizedBox(width: 8),
-                                                  Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                    decoration: BoxDecoration(
-                                                      color: const Color(0xFFFDE047).withOpacity(0.3),
-                                                      borderRadius: BorderRadius.circular(8),
-                                                      border: Border.all(color: const Color(0xFFFDE047).withOpacity(0.5)),
-                                                    ),
-                                                    child: Text(
-                                                      'Correct: ${wa.correctAnswer}',
-                                                      style: const TextStyle(
-                                                        color: Color(0xFFFDE047),
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.bold,
+                                                  Flexible(
+                                                    child: Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(0xFFFDE047).withOpacity(0.3),
+                                                        borderRadius: BorderRadius.circular(8),
+                                                        border: Border.all(color: const Color(0xFFFDE047).withOpacity(0.5)),
+                                                      ),
+                                                      child: Text(
+                                                        'Correct: ${wa.correctAnswer}',
+                                                        style: const TextStyle(
+                                                          color: Color(0xFFFDE047),
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                        overflow: TextOverflow.ellipsis,
                                                       ),
                                                     ),
                                                   ),
@@ -340,49 +346,58 @@ class _WrongNoteScreenState extends State<WrongNoteScreen> {
                                               const SizedBox(height: 8),
                                               Row(
                                                 children: [
-                                                  Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                    decoration: BoxDecoration(
-                                                      color: const Color(0x30FFFFFF),
-                                                      borderRadius: BorderRadius.circular(6),
-                                                    ),
-                                                    child: Text(
-                                                      _operationTypeToEnglish(wa.operationType),
-                                                      style: const TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 11,
+                                                  Flexible(
+                                                    child: Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(0x30FFFFFF),
+                                                        borderRadius: BorderRadius.circular(6),
+                                                      ),
+                                                      child: Text(
+                                                        _operationTypeToEnglish(wa.operationType),
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 11,
+                                                        ),
+                                                        overflow: TextOverflow.ellipsis,
                                                       ),
                                                     ),
                                                   ),
                                                   const SizedBox(width: 8),
-                                                  Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                    decoration: BoxDecoration(
-                                                      color: const Color(0x30FFFFFF),
-                                                      borderRadius: BorderRadius.circular(6),
-                                                    ),
-                                                    child: Text(
-                                                      'Lv${wa.level ?? '-'}',
-                                                      style: const TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 11,
+                                                  Flexible(
+                                                    child: Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(0x30FFFFFF),
+                                                        borderRadius: BorderRadius.circular(6),
+                                                      ),
+                                                      child: Text(
+                                                        'Lv${wa.level ?? '-'}',
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 11,
+                                                        ),
+                                                        overflow: TextOverflow.ellipsis,
                                                       ),
                                                     ),
                                                   ),
                                                   if (wa.count > 1) ...[
                                                     const SizedBox(width: 8),
-                                                    Container(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                      decoration: BoxDecoration(
-                                                        color: const Color(0xFFEC4899).withOpacity(0.3),
-                                                        borderRadius: BorderRadius.circular(6),
-                                                      ),
-                                                      child: Text(
-                                                        'Wrong ${wa.count} times',
-                                                        style: const TextStyle(
-                                                          color: Color(0xFFEC4899),
-                                                          fontSize: 11,
-                                                          fontWeight: FontWeight.bold,
+                                                    Flexible(
+                                                      child: Container(
+                                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                        decoration: BoxDecoration(
+                                                          color: const Color(0xFFEC4899).withOpacity(0.3),
+                                                          borderRadius: BorderRadius.circular(6),
+                                                        ),
+                                                        child: Text(
+                                                          'Wrong ${wa.count} times',
+                                                          style: const TextStyle(
+                                                            color: Color(0xFFEC4899),
+                                                            fontSize: 11,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
                                                         ),
                                                       ),
                                                     ),
@@ -463,46 +478,50 @@ class _WrongNoteScreenState extends State<WrongNoteScreen> {
       child: Row(
         children: [
           if (hasActiveFilters)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEC4899).withOpacity(0.3),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFEC4899).withOpacity(0.5)),
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEC4899).withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFEC4899).withOpacity(0.5)),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.filter_alt, color: Color(0xFFEC4899), size: 16),
+                    SizedBox(width: 4),
+                    Text(
+                      'Filtered',
+                      style: TextStyle(
+                        color: Color(0xFFEC4899),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+            )
+          else
+            Flexible(
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.filter_alt, color: Color(0xFFEC4899), size: 16),
-                  SizedBox(width: 4),
+                  Icon(Icons.book, color: Colors.white, size: 16),
+                  SizedBox(width: 8),
                   Text(
-                    'Filtered',
+                    'All Wrong Answers',
                     style: TextStyle(
-                      color: Color(0xFFEC4899),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
-            )
-          else
-            const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.book, color: Colors.white, size: 16),
-                SizedBox(width: 8),
-                Text(
-                  'All Wrong Answers',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
             ),
-          const Spacer(),
+          const SizedBox(width: 8),
           if (hasActiveFilters)
             Container(
               decoration: BoxDecoration(

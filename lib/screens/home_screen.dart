@@ -118,54 +118,54 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Consumer<AuthProvider>(
-            builder: (context, auth, child) {
-              final isGuest = !auth.isLoggedIn;
-              final displayName = isGuest ? 'Guest' : auth.nickname;
-              return Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.white,
-                    child: Text(
-                      displayName.substring(0, 1).toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        displayName,
+          Flexible(
+            child: Consumer<AuthProvider>(
+              builder: (context, auth, child) {
+                final isGuest = !auth.isLoggedIn;
+                final displayName = isGuest ? 'Guest' : auth.nickname;
+                return Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Colors.white,
+                      child: Text(
+                        displayName.substring(0, 1).toUpperCase(),
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: Colors.blue,
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              );
-            },
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            displayName,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
-          Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                  MainShell.setTabIndex?.call(6);
-                },
-                icon: const Icon(Icons.settings, color: Colors.white, size: 28),
-              ),
-            ],
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).popUntil((route) => route.isFirst);
+              MainShell.setTabIndex?.call(6);
+            },
+            icon: const Icon(Icons.settings, color: Colors.white, size: 28),
           ),
         ],
       ),
@@ -352,7 +352,7 @@ class _UnicornLoginNoticeState extends State<UnicornLoginNotice>
               children: [
                 Icon(Icons.info_outline, color: Color(0xFFFDE047), size: 28),
                 const SizedBox(width: 12),
-                Expanded(
+                Flexible(
                   child: Text(
                     'Guest, log in to save your learning history!',
                     style: TextStyle(
@@ -369,6 +369,7 @@ class _UnicornLoginNoticeState extends State<UnicornLoginNotice>
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 GestureDetector(
                   onTapDown: (_) {
                     setState(() => _isPressed = true);

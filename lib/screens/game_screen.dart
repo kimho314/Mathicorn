@@ -187,22 +187,28 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Problem ${gameProvider.currentProblemIndex + 1}/${gameProvider.totalProblems}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+              Flexible(
+                child: Text(
+                  'Problem ${gameProvider.currentProblemIndex + 1}/${gameProvider.totalProblems}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Text(
-                'Correct: ${gameProvider.correctAnswers}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  'Correct: ${gameProvider.correctAnswers}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

@@ -489,13 +489,16 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
         children: [
           const Icon(Icons.timer, color: Color(0xFF8B5CF6)),
           const SizedBox(width: 8),
-          Text(
-            'Time taken: ${minutes}m ${seconds}s',
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+          Flexible(
+            child: Text(
+              'Time taken: ${minutes}m ${seconds}s',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
         ],

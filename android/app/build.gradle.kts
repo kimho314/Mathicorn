@@ -8,7 +8,8 @@ plugins {
 android {
     namespace = "com.example.funny_calc"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // NDK 비활성화 - Flutter 앱에서 NDK가 필요하지 않은 경우
+    // ndkVersion = "25.1.8937393"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -28,6 +29,10 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // NDK ABI 필터 제거
+        // ndk {
+        //     abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
+        // }
     }
 
     buildTypes {

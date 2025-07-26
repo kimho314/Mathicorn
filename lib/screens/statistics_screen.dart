@@ -149,7 +149,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     // 연산별 정확도 차트 (PieChart)
                     _SectionTitle(title: '📊 Operation Accuracy'),
                     SizedBox(
-                      height: 140,
+                      height: 180, // 160에서 180으로 증가
                       child: _OperationAccuracyPieChart(
                         operationAccuracy: stats.operationAccuracy,
                       ),
@@ -327,35 +327,128 @@ class _OperationAccuracyPieChart extends StatelessWidget {
   final Map<String, double> operationAccuracy;
   const _OperationAccuracyPieChart({required this.operationAccuracy});
 
+  // 연산명을 기호로 변환하는 함수
+  String _operationToSymbol(String operation) {
+    switch (operation.toLowerCase()) {
+      case 'addition':
+      case '더하기':
+        return '+';
+      case 'subtraction':
+      case '빼기':
+        return '−';
+      case 'multiplication':
+      case '곱하기':
+        return '×';
+      case 'division':
+      case '나누기':
+        return '÷';
+      default:
+        return operation;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (operationAccuracy.isEmpty) {
       return const Center(child: Text('No data', style: TextStyle(color: Colors.white)));
     }
+    
+    // 더 다양한 색상 추가
     final colors = [
       Color(0xFF8B5CF6), // primary.purple
-      // Color(0xFFFDE047), // secondary.yellow
-      // Color(0xFF06B6D4), // secondary.cyan
-      // Color(0xFF14B8A6), // secondary.teal
+      Color(0xFFD946EF), // primary.magenta
+      Color(0xFFEC4899), // primary.pink
+      Color(0xFF06B6D4), // secondary.cyan
+      Color(0xFF14B8A6), // secondary.teal
+      Color(0xFFFDE047), // secondary.yellow
     ];
+    
     int colorIdx = 0;
     final sections = operationAccuracy.entries.map((e) {
+      final symbol = _operationToSymbol(e.key);
       final section = PieChartSectionData(
         value: e.value,
-        title: '${e.key}\n${e.value.toStringAsFixed(1)}%',
+        title: '', // 텍스트 제거
         color: colors[colorIdx % colors.length],
-        radius: 40,
-        titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+        radius: 35, // 50에서 35로 줄임
+        titleStyle: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold, 
+          color: Colors.white,
+          shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black26)],
+        ),
       );
       colorIdx++;
       return section;
     }).toList();
-    return PieChart(
-      PieChartData(
-        sections: sections,
-        centerSpaceRadius: 0,
-        sectionsSpace: 2,
-        borderData: FlBorderData(show: false),
+    
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.20),
+            Colors.white.withOpacity(0.08),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(12), // 16에서 12로 줄임
+      child: Column(
+        children: [
+          Expanded(
+            child: PieChart(
+              PieChartData(
+                sections: sections,
+                centerSpaceRadius: 15, // 20에서 15로 줄임
+                sectionsSpace: 2, // 3에서 2로 줄임
+                borderData: FlBorderData(show: false),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8), // 12에서 8로 줄임
+          // 범례 추가
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: operationAccuracy.entries.map((e) {
+              final color = colors[operationAccuracy.keys.toList().indexOf(e.key) % colors.length];
+              final symbol = _operationToSymbol(e.key);
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '$symbol: ${e.value.toStringAsFixed(1)}%',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black26)],
+                    ),
+                  ),
+                ],
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
