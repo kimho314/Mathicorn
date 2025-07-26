@@ -58,6 +58,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);

@@ -262,6 +262,8 @@ class _SignUpFormState extends State<_SignUpForm> {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   MainShell.setTabIndex?.call(0);
                   Navigator.of(context).popUntil((route) => route.isFirst);
+                  // 이메일 인증 다이얼로그 표시
+                  MainShell.showEmailConfirmation?.call();
                 });
               }
             },

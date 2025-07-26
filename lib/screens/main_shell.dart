@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:Mathicorn/screens/home_screen.dart';
 import 'package:Mathicorn/screens/game_setup_screen.dart';
 import 'package:Mathicorn/screens/game_screen.dart';
@@ -23,6 +24,9 @@ class MainShell extends StatefulWidget {
   static void Function(int)? setTabIndex;
 
   static void Function(int, int, Duration?, GameLevel?)? showResultScreen;
+  
+  // 이메일 확인 다이얼로그 표시를 위한 static 콜백
+  static void Function()? showEmailConfirmation;
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -65,14 +69,176 @@ class _MainShellState extends State<MainShell> {
         });
       }
     };
+    
+    // 이메일 확인 다이얼로그 표시를 위한 메서드 추가
+    MainShell.showEmailConfirmation = () {
+      if (_instance != null && _instance!.mounted) {
+        // 홈 화면으로 이동
+        _instance!.setState(() => _instance!._selectedIndex = 0);
+        // 이메일 확인 다이얼로그 표시
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _instance!._showEmailConfirmationDialog();
+        });
+      }
+    };
   }
 
   @override
   void dispose() {
     MainShell.setTabIndex = null;
     MainShell.showResultScreen = null;
+    MainShell.showEmailConfirmation = null;
     _instance = null;
     super.dispose();
+  }
+
+  void _showEmailConfirmationDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.3),
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.25),
+                  Colors.white.withOpacity(0.1),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 이메일 아이콘
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.white.withOpacity(0.9),
+                              Colors.white.withOpacity(0.7),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(50),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.4),
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.email_outlined,
+                          color: UnicornColors.purple,
+                          size: 32,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      // 제목
+                      Text(
+                        'Email Confirmation Required',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 22,
+                          shadows: [
+                            Shadow(
+                              offset: const Offset(1, 1),
+                              blurRadius: 2,
+                              color: Colors.black.withOpacity(0.1),
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // 내용
+                      Text(
+                        'A confirmation email has been sent to your address.\n\nPlease check your email and click the confirmation link to complete your registration.',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.95),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          shadows: [
+                            Shadow(
+                              offset: const Offset(0, 1),
+                              blurRadius: 2,
+                              color: Colors.black.withOpacity(0.26),
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      // OK 버튼
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white.withOpacity(0.25),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text(
+                            'OK',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
