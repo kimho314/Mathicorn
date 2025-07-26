@@ -48,8 +48,60 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           stats.operationAccuracy.isEmpty &&
           stats.levelAccuracy.isEmpty;
         if (stats == null || isInitialStats) {
-          return const Scaffold(
-            body: Center(child: Text('No statistics data yet.', style: TextStyle(fontSize: 18))),
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Center(
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0x40FFFFFF),
+                      Color(0x20FFFFFF),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: const Color(0x30FFFFFF)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.bar_chart_rounded,
+                      size: 64,
+                      color: Colors.white,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'No statistics data yet.',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Play some games to see your stats here!',
+                      style: TextStyle(
+                        color: Color(0xCCFFFFFF),
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           );
         }
         return Scaffold(

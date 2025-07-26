@@ -176,17 +176,7 @@ class _UnicornBackground extends StatelessWidget {
         IgnorePointer(
           child: Stack(
             children: [
-              Positioned(
-                bottom: 60,
-                right: 30,
-                child: SizedBox(
-                  width: 60,
-                  child: Opacity(
-                    opacity: 0.7,
-                    child: Lottie.asset('assets/animations/star.json', repeat: true),
-                  ),
-                ),
-              ),
+              // ⭐️ 별 애니메이션 완전 제거
               Positioned(
                 top: 120,
                 right: 40,
