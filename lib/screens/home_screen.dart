@@ -350,15 +350,13 @@ class _UnicornLoginNoticeState extends State<UnicornLoginNotice>
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Row(
               children: [
-                Icon(Icons.info_outline, color: Color(0xFFFDE047), size: 28),
-                const SizedBox(width: 12),
-                Flexible(
+                Expanded(
                   child: Text(
-                    'Guest, log in to save your learning history!',
+                    'Check your progress!',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
-                      fontSize: 16,
+                      fontSize: 14,
                       shadows: [
                         Shadow(
                           color: Colors.black.withOpacity(0.08),
@@ -367,9 +365,11 @@ class _UnicornLoginNoticeState extends State<UnicornLoginNotice>
                         ),
                       ],
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 GestureDetector(
                   onTapDown: (_) {
                     setState(() => _isPressed = true);
@@ -405,7 +405,7 @@ class _UnicornLoginNoticeState extends State<UnicornLoginNotice>
                             ],
                           ),
                           child: Text(
-                            'Login / Sign Up',
+                            'Login',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
