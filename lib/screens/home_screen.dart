@@ -189,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         const SizedBox(height: 16),
         _buildMenuButton(
           icon: Icons.book,
-          title: 'Wrong Note',
+          title: 'Note',
           subtitle: 'Review your mistakes',
           color: Colors.red,
           onTap: () async {

@@ -264,7 +264,7 @@ class _MainShellState extends State<MainShell> {
       const NavigationDestination(
         icon: Icon(Icons.book_outlined),
         selectedIcon: Icon(Icons.book),
-        label: 'Wrong Note',
+        label: 'Note',
       ),
       const NavigationDestination(
         icon: Icon(Icons.bar_chart_outlined),

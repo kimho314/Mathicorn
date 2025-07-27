@@ -46,7 +46,7 @@ class _WrongNoteScreenState extends State<WrongNoteScreen> {
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text(
-          'Wrong Note',
+          'Note',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,
