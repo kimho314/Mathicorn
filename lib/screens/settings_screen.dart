@@ -132,7 +132,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 8.0), // 하단 패딩을 8로 줄임
                 child: Text(
                   title,
                   style: const TextStyle(
@@ -150,6 +150,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               ...children,
+              const SizedBox(height: 16), // 카드 하단에 여백 추가
             ],
           ),
         ),
@@ -164,7 +165,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required ValueChanged<bool> onChanged,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 4), // 상하 마진을 4로 줄임
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.1),
@@ -217,7 +218,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return GestureDetector(
       onTap: () => _showLanguageDialog(context, settingsProvider, auth),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 4), // 상하 마진을 4로 줄임
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.1),
