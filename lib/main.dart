@@ -130,7 +130,7 @@ class FunnyCalcApp extends StatelessWidget {
                 )),
                 iconTheme: MaterialStateProperty.all(const IconThemeData(
                   color: Color(0xFF8B5CF6),
-                  size: 28,
+                  size: 32,
                 )),
               ),
             ),

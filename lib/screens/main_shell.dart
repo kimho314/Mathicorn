@@ -315,11 +315,11 @@ class _MainShellState extends State<MainShell> {
             : _screens[_selectedIndex],
       ),
       bottomNavigationBar: NavigationBar(
-        height: 70,
+        height: 80,
         selectedIndex: visibleSelectedIndex,
         backgroundColor: UnicornColors.white.withOpacity(0.7),
         indicatorColor: UnicornColors.purple.withOpacity(0.15),
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
         onDestinationSelected: (idx) async {
           // Only allow navigation to AuthScreen if not logged in
           if ((visibleTabIndices[idx] == 3 || visibleTabIndices[idx] == 4 || visibleTabIndices[idx] == 5) && !auth.isLoggedIn) {
