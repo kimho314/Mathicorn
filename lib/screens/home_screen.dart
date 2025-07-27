@@ -14,6 +14,7 @@ import 'package:Mathicorn/widgets/login_required_dialog.dart';
 import 'package:Mathicorn/screens/main_shell.dart';
 import '../utils/unicorn_theme.dart';
 import 'dart:ui';
+import 'package:flutter/services.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -233,7 +234,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap,
+          onTap: () {
+            HapticFeedback.lightImpact();
+            onTap();
+          },
           borderRadius: BorderRadius.circular(24),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -374,10 +378,14 @@ class _UnicornLoginNoticeState extends State<UnicornLoginNotice>
                   onTapDown: (_) {
                     setState(() => _isPressed = true);
                     _animationController.forward();
+                    // 햅틱 피드백 추가
+                    HapticFeedback.lightImpact();
                   },
                   onTapUp: (_) {
                     setState(() => _isPressed = false);
                     _animationController.reverse();
+                    // 햅틱 피드백 추가
+                    HapticFeedback.selectionClick();
                     widget.onLoginTap();
                   },
                   onTapCancel: () {
@@ -389,7 +397,8 @@ class _UnicornLoginNoticeState extends State<UnicornLoginNotice>
                     builder: (context, child) {
                       return Transform.scale(
                         scale: _scaleAnimation.value,
-                        child: Container(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
                           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                           decoration: BoxDecoration(
                             color: _isPressed 
@@ -398,9 +407,10 @@ class _UnicornLoginNoticeState extends State<UnicornLoginNotice>
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(_isPressed ? 0.15 : 0.10),
-                                blurRadius: _isPressed ? 4 : 8,
-                                offset: Offset(0, _isPressed ? 1 : 2),
+                                color: Colors.black.withOpacity(_isPressed ? 0.25 : 0.15),
+                                blurRadius: _isPressed ? 2 : 6,
+                                offset: Offset(0, _isPressed ? 2 : 3),
+                                spreadRadius: _isPressed ? 1 : 0,
                               ),
                             ],
                           ),
