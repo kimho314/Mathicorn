@@ -39,54 +39,56 @@ class _SettingsScreenState extends State<SettingsScreen> {
       decoration: UnicornDecorations.appBackground,
       child: Consumer<SettingsProvider>(
         builder: (context, settingsProvider, child) {
-          return Stack(
-            children: [
-              ListView(
-                padding: const EdgeInsets.all(20.0),
-                children: [
-                  // Sound Settings
-                  _buildSettingCard(
-                    title: '🔊 Sound Settings',
-                    children: [
-                      _buildSwitchTile(
-                        title: 'Sound Effects',
-                        subtitle: 'Play sound effects for correct/wrong answers',
-                        value: settingsProvider.soundEnabled,
-                        onChanged: (value) {
-                          settingsProvider.setSoundEnabled(value, auth);
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  // Language Settings
-                  _buildSettingCard(
-                    title: '🌍 Language Settings',
-                    children: [
-                      _buildLanguageSelector(settingsProvider, auth),
-                    ],
-                  ),
-                  if (settingsProvider.error != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 24.0),
-                      child: Center(
-                        child: Text(
-                          'Error: \\${settingsProvider.error}',
-                          style: const TextStyle(color: Colors.red, fontSize: 16),
-                          textAlign: TextAlign.center,
+          return SafeArea(
+            child: Stack(
+              children: [
+                ListView(
+                  padding: const EdgeInsets.fromLTRB(20.0, 40.0, 20.0, 20.0),
+                  children: [
+                    // Sound Settings
+                    _buildSettingCard(
+                      title: '🔊 Sound Settings',
+                      children: [
+                        _buildSwitchTile(
+                          title: 'Sound Effects',
+                          subtitle: 'Play sound effects for correct/wrong answers',
+                          value: settingsProvider.soundEnabled,
+                          onChanged: (value) {
+                            settingsProvider.setSoundEnabled(value, auth);
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    // Language Settings
+                    _buildSettingCard(
+                      title: '🌍 Language Settings',
+                      children: [
+                        _buildLanguageSelector(settingsProvider, auth),
+                      ],
+                    ),
+                    if (settingsProvider.error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: Center(
+                          child: Text(
+                            'Error: \\${settingsProvider.error}',
+                            style: const TextStyle(color: Colors.red, fontSize: 16),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-              if (settingsProvider.loading)
-                const Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: LinearProgressIndicator(minHeight: 3),
+                  ],
                 ),
-            ],
+                if (settingsProvider.loading)
+                  const Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: LinearProgressIndicator(minHeight: 3),
+                  ),
+              ],
+            ),
           );
         },
       ),
@@ -179,17 +181,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Navigator.of(context).pop();
                 },
               ),
-              RadioListTile<String>(
-                title: const Text('한국어'),
-                value: 'ko',
-                groupValue: settingsProvider.selectedLanguage,
-                onChanged: (value) {
-                  if (value != null) {
-                    settingsProvider.setLanguage(value, auth);
-                  }
-                  Navigator.of(context).pop();
-                },
-              ),
+
             ],
           ),
         );
@@ -198,12 +190,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   String _getLanguageText(String code) {
-    switch (code) {
-      case 'ko':
-        return '한국어';
-      case 'en':
-      default:
-        return 'English';
-    }
+    return 'English';
   }
 } 
