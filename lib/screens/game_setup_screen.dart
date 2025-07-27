@@ -118,34 +118,39 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              Slider(
-                value: _selectedProblemCount.toDouble(),
-                min: 5,
-                max: 20,
-                divisions: 3,
-                activeColor: Colors.white,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedProblemCount = value.round();
-                  });
-                },
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  trackHeight: 4.0,
+                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
+                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
+                  activeTrackColor: Colors.white,
+                  inactiveTrackColor: Colors.white.withOpacity(0.3),
+                  thumbColor: Colors.white,
+                ),
+                child: Slider(
+                  value: _selectedProblemCount.toDouble(),
+                  min: 5,
+                  max: 20,
+                  divisions: 3,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedProblemCount = value.round();
+                    });
+                  },
+                ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Flexible(
-                    child: Text('5 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
-                  ),
-                  Flexible(
-                    child: Text('10 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
-                  ),
-                  Flexible(
-                    child: Text('15 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
-                  ),
-                  Flexible(
-                    child: Text('20 problems', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7))),
-                  ),
-                ],
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: const [
+                    Text('5', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7), fontSize: 14)),
+                    Text('10', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7), fontSize: 14)),
+                    Text('15', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7), fontSize: 14)),
+                    Text('20', style: TextStyle(color: Color.fromRGBO(255,255,255,0.7), fontSize: 14)),
+                  ],
+                ),
               ),
             ],
           ),
