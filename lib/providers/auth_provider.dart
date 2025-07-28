@@ -8,6 +8,10 @@ import 'package:Mathicorn/providers/wrong_note_provider.dart';
 class AuthProvider with ChangeNotifier {
   User? _user;
   WrongNoteProvider? _wrongNoteProvider;
+  int _retryCount = 0;
+  static const int _maxRetries = 2;
+
+
 
   AuthProvider() {
     _user = Supabase.instance.client.auth.currentUser;
@@ -46,53 +50,117 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<String?> signIn(String email, String password) async {
-    try {
-      final res = await Supabase.instance.client.auth.signInWithPassword(email: email, password: password);
-      print('[Supabase Login Result] user: ${res.user}, session: ${res.session}');
-      if (res.user != null) {
-        _updateWrongNoteProvider();
-        return null;
+    _retryCount = 0;
+    
+    while (_retryCount <= _maxRetries) {
+      try {
+        final res = await Supabase.instance.client.auth.signInWithPassword(email: email, password: password);
+        print('[Supabase Login Result] user: ${res.user}, session: ${res.session}');
+        if (res.user != null) {
+          _updateWrongNoteProvider();
+          _retryCount = 0; // 성공 시 재시도 카운트 리셋
+          return null;
+        }
+        return 'Login failed';
+      } on AuthException catch (e) {
+        print('[Supabase Login AuthException] ${e.message}');
+        // 네트워크 관련 에러인지 확인
+        if (e.message.contains('SocketException') || 
+            e.message.contains('Failed host lookup') ||
+            e.message.contains('No address associated with hostname') ||
+            e.message.contains('Connection refused') ||
+            e.message.contains('Network is unreachable')) {
+          _retryCount++;
+          print('[Supabase Login Network AuthException] attempt $_retryCount: ${e.toString()}');
+          if (_retryCount <= _maxRetries) {
+            // 1초 대기 후 재시도
+            await Future.delayed(const Duration(seconds: 1));
+            continue; // while 루프의 다음 반복으로
+          } else {
+            // 최대 재시도 횟수 초과
+            print('Max retries reached for login (AuthException)');
+            return 'Network Error';
+          }
+        }
+        return e.message;
+      } catch (e) {
+        _retryCount++;
+        print('[Supabase Login Exception] attempt $_retryCount: ${e.toString()}');
+        if (_retryCount <= _maxRetries) {
+          // 1초 대기 후 재시도
+          await Future.delayed(const Duration(seconds: 1));
+        } else {
+          // 최대 재시도 횟수 초과
+          print('Max retries reached for login');
+          return 'Network Error';
+        }
       }
-      return 'Login failed';
-    } on AuthException catch (e) {
-      print('[Supabase Login AuthException] ${e.message}');
-      return e.message;
-    } catch (e) {
-      print('[Supabase Login Exception] ${e.toString()}');
-      return 'Login failed';
     }
+    return 'Network Error';
   }
 
   Future<String?> signUp(String email, String password, String nickname) async {
-    try {
-      final res = await Supabase.instance.client.auth.signUp(
-        email: email,
-        password: password,
-        data: {'nickname': nickname},
-      );
-      print('[Supabase SignUp Result] user: ${res.user}, session: ${res.session}');
-      if (res.user != null) {
-        // users 테이블에도 정보 저장
-        await Supabase.instance.client.from('users').insert({
-          'id': res.user!.id,
-          'email': email,
-          'nickname': nickname,
-        });
-        _updateWrongNoteProvider();
-        return null;
+    _retryCount = 0;
+    
+    while (_retryCount <= _maxRetries) {
+      try {
+        final res = await Supabase.instance.client.auth.signUp(
+          email: email,
+          password: password,
+          data: {'nickname': nickname},
+        );
+        print('[Supabase SignUp Result] user: ${res.user}, session: ${res.session}');
+        if (res.user != null) {
+          // users 테이블에도 정보 저장
+          await Supabase.instance.client.from('users').insert({
+            'id': res.user!.id,
+            'email': email,
+            'nickname': nickname,
+          });
+          _updateWrongNoteProvider();
+          _retryCount = 0; // 성공 시 재시도 카운트 리셋
+          return null;
+        }
+        // 이메일 인증이 필요한 경우
+        if (res.session == null && res.user == null) {
+          return 'Check your email to confirm your account!';
+        }
+        return 'Sign up failed';
+      } on AuthException catch (e) {
+        print('[Supabase SignUp AuthException] ${e.message}');
+        // 네트워크 관련 에러인지 확인
+        if (e.message.contains('SocketException') || 
+            e.message.contains('Failed host lookup') ||
+            e.message.contains('No address associated with hostname') ||
+            e.message.contains('Connection refused') ||
+            e.message.contains('Network is unreachable')) {
+          _retryCount++;
+          print('[Supabase SignUp Network AuthException] attempt $_retryCount: ${e.toString()}');
+          if (_retryCount <= _maxRetries) {
+            // 1초 대기 후 재시도
+            await Future.delayed(const Duration(seconds: 1));
+            continue; // while 루프의 다음 반복으로
+          } else {
+            // 최대 재시도 횟수 초과
+            print('Max retries reached for signup (AuthException)');
+            return 'Network Error';
+          }
+        }
+        return e.message;
+      } catch (e) {
+        _retryCount++;
+        print('[Supabase SignUp Exception] attempt $_retryCount: ${e.toString()}');
+        if (_retryCount <= _maxRetries) {
+          // 1초 대기 후 재시도
+          await Future.delayed(const Duration(seconds: 1));
+        } else {
+          // 최대 재시도 횟수 초과
+          print('Max retries reached for signup');
+          return 'Network Error';
+        }
       }
-      // 이메일 인증이 필요한 경우
-      if (res.session == null && res.user == null) {
-        return 'Check your email to confirm your account!';
-      }
-      return 'Sign up failed';
-    } on AuthException catch (e) {
-      print('[Supabase SignUp AuthException] ${e.message}');
-      return e.message;
-    } catch (e) {
-      print('[Supabase SignUp Exception] ${e.toString()}');
-      return 'Sign up failed';
     }
+    return 'Network Error';
   }
 
   Future<void> signOut() async {
