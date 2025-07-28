@@ -176,6 +176,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                       height: 400,
                       child: TabBarView(
                         controller: _tabController,
+                        physics: const NeverScrollableScrollPhysics(), // 스와이핑 비활성화
                         children: [
                           SingleChildScrollView(child: _LoginForm(onNetworkError: _showNetworkErrorDialog)),
                           SingleChildScrollView(child: _SignUpForm(onNetworkError: _showNetworkErrorDialog)),
