@@ -96,8 +96,16 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> signOut() async {
-    await Supabase.instance.client.auth.signOut();
+    try {
+      await Supabase.instance.client.auth.signOut();
+    } catch (e) {
+      print('Network error during sign out: $e');
+      // 네트워크 에러가 발생해도 로컬에서 로그아웃 처리
+    }
+    // 로컬 상태 초기화
+    _user = null;
     _updateWrongNoteProvider();
+    notifyListeners();
   }
 
   Future<void> saveUserProfile(UserProfile profile) async {

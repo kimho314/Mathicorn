@@ -211,7 +211,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             tooltip: 'Logout',
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              await context.read<AuthProvider>().signOut();
+              try {
+                await context.read<AuthProvider>().signOut();
+              } catch (e) {
+                print('Error during logout: $e');
+              }
               if (mounted) {
                 Navigator.of(context).popUntil((route) => route.isFirst);
                 MainShell.setTabIndex?.call(0);
