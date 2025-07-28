@@ -43,8 +43,6 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Game Settings', style: UnicornTextStyles.header),
-                    const SizedBox(height: 24),
                     _buildProblemCountSection(),
                     const SizedBox(height: 30),
                     _buildLevelSelectionSection(),
