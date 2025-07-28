@@ -10,6 +10,8 @@ class WrongNoteProvider extends ChangeNotifier {
   bool _hasMoreData = true;
   String? _lastLoadedId;
   bool _isLoading = false;
+  int _retryCount = 0;
+  static const int _maxRetries = 2;
   
   // 필터 상태
   String? _selectedOperationType;
@@ -24,6 +26,19 @@ class WrongNoteProvider extends ChangeNotifier {
   DateTime? get toDate => _toDate;
 
   String? userId;
+
+  // 네트워크 에러 다이얼로그 표시를 위한 콜백
+  Function()? _onNetworkError;
+
+  void setNetworkErrorCallback(Function() callback) {
+    _onNetworkError = callback;
+  }
+
+  void _triggerNetworkErrorDialog() {
+    if (_onNetworkError != null) {
+      _onNetworkError!();
+    }
+  }
 
   // 필터 설정
   void setFilters({
@@ -57,58 +72,77 @@ class WrongNoteProvider extends ChangeNotifier {
     setState(() {
       _isLoading = true;
     });
+    _retryCount = 0;
 
-    try {
-      final supabase = Supabase.instance.client;
-      print('Debug: Loading wrong answers for user: $userId');
-      
-      // 기본 쿼리 시작
-      var query = supabase
-          .from(tableName)
-          .select()
-          .eq('user_id', userId!);
-      
-      // 필터 적용
-      if (_selectedOperationType != null && _selectedOperationType!.isNotEmpty) {
-        query = query.eq('operation_type', _selectedOperationType!);
-        print('Debug: Filtering by operation_type: $_selectedOperationType');
+    while (_retryCount <= _maxRetries) {
+      try {
+        final supabase = Supabase.instance.client;
+        print('Debug: Loading wrong answers for user: $userId');
+        
+        // 기본 쿼리 시작
+        var query = supabase
+            .from(tableName)
+            .select()
+            .eq('user_id', userId!);
+        
+        // 필터 적용
+        if (_selectedOperationType != null && _selectedOperationType!.isNotEmpty) {
+          query = query.eq('operation_type', _selectedOperationType!);
+          print('Debug: Filtering by operation_type: $_selectedOperationType');
+        }
+        
+        if (_fromDate != null) {
+          query = query.gte('created_at', _fromDate!.toIso8601String());
+          print('Debug: Filtering from date: $_fromDate');
+        }
+        
+        if (_toDate != null) {
+          query = query.lte('created_at', _toDate!.toIso8601String());
+          print('Debug: Filtering to date: $_toDate');
+        }
+        
+        // 정렬 및 제한
+        final response = await query
+            .order('created_at', ascending: false)
+            .limit(pageSize);
+        
+        print('Debug: Loaded ${response.length} wrong answers');
+        
+        _wrongAnswers = (response as List)
+            .map((e) => WrongAnswer.fromJson(e))
+            .toList();
+        
+        // 마지막 ID 저장 (pagination용)
+        if (_wrongAnswers.isNotEmpty) {
+          _lastLoadedId = _wrongAnswers.last.id;
+          _hasMoreData = _wrongAnswers.length >= pageSize;
+        } else {
+          _hasMoreData = false;
+        }
+        
+        setState(() {
+          _isLoading = false;
+        });
+        _retryCount = 0; // 성공 시 재시도 카운트 리셋
+        notifyListeners();
+        return; // 성공 시 함수 종료
+      } catch (e) {
+        _retryCount++;
+        print('Error loading wrong answers (attempt $_retryCount): $e');
+        if (_retryCount <= _maxRetries) {
+          // 1초 대기 후 재시도
+          await Future.delayed(const Duration(seconds: 1));
+        } else {
+          // 최대 재시도 횟수 초과
+          print('Max retries reached for loading wrong answers');
+          setState(() {
+            _isLoading = false;
+          });
+          notifyListeners();
+          _triggerNetworkErrorDialog();
+          return;
+        }
       }
-      
-      if (_fromDate != null) {
-        query = query.gte('created_at', _fromDate!.toIso8601String());
-        print('Debug: Filtering from date: $_fromDate');
-      }
-      
-      if (_toDate != null) {
-        query = query.lte('created_at', _toDate!.toIso8601String());
-        print('Debug: Filtering to date: $_toDate');
-      }
-      
-      // 정렬 및 제한
-      final response = await query
-          .order('created_at', ascending: false)
-          .limit(pageSize);
-      
-      print('Debug: Loaded ${response.length} wrong answers');
-      
-      _wrongAnswers = (response as List)
-          .map((e) => WrongAnswer.fromJson(e))
-          .toList();
-      
-      // 마지막 ID 저장 (pagination용)
-      if (_wrongAnswers.isNotEmpty) {
-        _lastLoadedId = _wrongAnswers.last.id;
-        _hasMoreData = _wrongAnswers.length >= pageSize;
-      } else {
-        _hasMoreData = false;
-      }
-    } catch (e) {
-      print('Error loading wrong answers: $e');
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-      notifyListeners();
     }
   }
 
