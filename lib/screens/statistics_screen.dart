@@ -5,6 +5,7 @@ import '../models/statistics.dart';
 import '../providers/auth_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../utils/unicorn_theme.dart';
+import 'main_shell.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({Key? key}) : super(key: key);
@@ -19,11 +20,124 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final auth = Provider.of<AuthProvider>(context, listen: false);
+      final statisticsProvider = Provider.of<StatisticsProvider>(context, listen: false);
+      
+      // 네트워크 에러 콜백 설정
+      statisticsProvider.setNetworkErrorCallback(() {
+        if (mounted) {
+          _showNetworkErrorDialog();
+        }
+      });
+      
       if (auth.isLoggedIn && auth.user != null) {
-        Provider.of<StatisticsProvider>(context, listen: false)
-            .fetchStatistics(auth.user!.id);
+        statisticsProvider.fetchStatistics(auth.user!.id);
       }
     });
+  }
+
+  void _showNetworkErrorDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.25),
+                Colors.white.withOpacity(0.1),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.10),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withOpacity(0.3),
+                      Colors.white.withOpacity(0.15),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(50),
+                  border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+                ),
+                child: const Icon(
+                  Icons.wifi_off,
+                  color: Colors.white,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Network Error',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Failed to load statistics data.\nPlease check your internet connection.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // 다이얼로그 닫기
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                    MainShell.setTabIndex?.call(0);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white.withOpacity(0.9),
+                    foregroundColor: const Color(0xFF8B5CF6),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    shadowColor: Colors.black.withOpacity(0.1),
+                    elevation: 2,
+                  ),
+                  child: const Text(
+                    'Back',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override

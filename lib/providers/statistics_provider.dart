@@ -6,6 +6,8 @@ class StatisticsProvider extends ChangeNotifier {
   Statistics? _statistics;
   bool _isLoading = false;
   String? _error;
+  int _retryCount = 0;
+  static const int _maxRetries = 2;
 
   Statistics? get statistics => _statistics;
   bool get isLoading => _isLoading;
@@ -15,36 +17,70 @@ class StatisticsProvider extends ChangeNotifier {
   Future<void> fetchStatistics(String userId) async {
     _isLoading = true;
     _error = null;
+    _retryCount = 0;
     notifyListeners();
-    try {
-      final supabase = Supabase.instance.client;
-      final response = await supabase
-          .from('statistics')
-          .select()
-          .eq('user_id', userId)
-          .maybeSingle();
-      if (response != null && response is Map<String, dynamic>) {
-        _statistics = Statistics.fromJson(response);
-      } else {
-        // 없으면 기본값 생성
-        _statistics = Statistics(
-          userId: userId,
-          totalSolved: 0,
-          totalCorrect: 0,
-          averageAccuracy: 0.0,
-          averageTimePerQuestion: 0.0,
-          favoriteOperation: '',
-          weakestOperation: '',
-          dailyActivity: {},
-          operationAccuracy: {},
-          levelAccuracy: {},
-        );
+    
+    while (_retryCount <= _maxRetries) {
+      try {
+        final supabase = Supabase.instance.client;
+        final response = await supabase
+            .from('statistics')
+            .select()
+            .eq('user_id', userId)
+            .maybeSingle();
+        if (response != null && response is Map<String, dynamic>) {
+          _statistics = Statistics.fromJson(response);
+        } else {
+          // 없으면 기본값 생성
+          _statistics = Statistics(
+            userId: userId,
+            totalSolved: 0,
+            totalCorrect: 0,
+            averageAccuracy: 0.0,
+            averageTimePerQuestion: 0.0,
+            favoriteOperation: '',
+            weakestOperation: '',
+            dailyActivity: {},
+            operationAccuracy: {},
+            levelAccuracy: {},
+          );
+        }
+        _isLoading = false;
+        _retryCount = 0; // 성공 시 재시도 카운트 리셋
+        notifyListeners();
+        return; // 성공 시 함수 종료
+      } catch (e) {
+        _retryCount++;
+        if (_retryCount <= _maxRetries) {
+          // 1초 대기 후 재시도
+          await Future.delayed(const Duration(seconds: 1));
+        } else {
+          // 최대 재시도 횟수 초과
+          _error = 'Network Error';
+          _isLoading = false;
+          notifyListeners();
+          _triggerNetworkErrorDialog();
+          return;
+        }
       }
-    } catch (e) {
-      _error = e.toString();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+    }
+  }
+
+  void _showNetworkErrorDialog() {
+    // BuildContext가 필요하므로 별도 메서드로 분리
+    // 실제 다이얼로그는 StatisticsScreen에서 처리
+  }
+
+  // 네트워크 에러 다이얼로그 표시를 위한 콜백
+  Function()? _onNetworkError;
+
+  void setNetworkErrorCallback(Function() callback) {
+    _onNetworkError = callback;
+  }
+
+  void _triggerNetworkErrorDialog() {
+    if (_onNetworkError != null) {
+      _onNetworkError!();
     }
   }
 
