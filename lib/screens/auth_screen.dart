@@ -302,6 +302,7 @@ class _LoginFormState extends State<_LoginForm> {
   final _pw = TextEditingController();
   String? _error;
   bool _loading = false;
+  bool _obscurePassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -325,8 +326,19 @@ class _LoginFormState extends State<_LoginForm> {
             filled: true,
             fillColor: Colors.white.withOpacity(0.7),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                color: Colors.grey[600],
+              ),
+              onPressed: () {
+                setState(() {
+                  _obscurePassword = !_obscurePassword;
+                });
+              },
+            ),
           ),
-          obscureText: true,
+          obscureText: _obscurePassword,
         ),
         if (_error != null) ...[
           const SizedBox(height: 8),
@@ -412,6 +424,7 @@ class _SignUpFormState extends State<_SignUpForm> {
   final _nickname = TextEditingController();
   String? _error;
   bool _loading = false;
+  bool _obscurePassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -435,8 +448,19 @@ class _SignUpFormState extends State<_SignUpForm> {
             filled: true,
             fillColor: Colors.white.withOpacity(0.7),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                color: Colors.grey[600],
+              ),
+              onPressed: () {
+                setState(() {
+                  _obscurePassword = !_obscurePassword;
+                });
+              },
+            ),
           ),
-          obscureText: true,
+          obscureText: _obscurePassword,
         ),
         const SizedBox(height: 16),
         TextField(
