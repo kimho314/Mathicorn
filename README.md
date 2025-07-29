@@ -61,7 +61,49 @@ flutter pub get
    - Configure environment variables (`.env` file)
    - Set up database schema
 
-4. **Run App**
+4. **Database Setup**
+   
+   Run the following SQL scripts in your Supabase SQL Editor:
+   
+   ```sql
+   -- Add profile_image_url column to user_profiles table
+   ALTER TABLE user_profiles 
+   ADD COLUMN profile_image_url TEXT;
+   
+   -- Create avatars storage bucket
+   INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+   VALUES (
+     'avatars',
+     'avatars',
+     true,
+     5242880, -- 5MB limit
+     ARRAY['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+   );
+   
+   -- Create storage policies
+   CREATE POLICY "Users can upload their own profile images" ON storage.objects
+   FOR INSERT WITH CHECK (
+     bucket_id = 'avatars' 
+     AND auth.uid()::text = (storage.foldername(name))[1]
+   );
+   
+   CREATE POLICY "Users can update their own profile images" ON storage.objects
+   FOR UPDATE USING (
+     bucket_id = 'avatars' 
+     AND auth.uid()::text = (storage.foldername(name))[1]
+   );
+   
+   CREATE POLICY "Users can delete their own profile images" ON storage.objects
+   FOR DELETE USING (
+     bucket_id = 'avatars' 
+     AND auth.uid()::text = (storage.foldername(name))[1]
+   );
+   
+   CREATE POLICY "Public read access to profile images" ON storage.objects
+   FOR SELECT USING (bucket_id = 'avatars');
+   ```
+
+5. **Run App**
 ```bash
 flutter run
 ```
@@ -213,27 +255,10 @@ lib/
 - ✅ **Performance Optimization**: Animation and loading speed improvements
 - ✅ **Accessibility Improvements**: UI/UX for all users
 
-## 🤝 Contributing
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ## 📄 License
 
 This project is distributed under the MIT License. See the `LICENSE` file for details.
-
-## 👨‍💻 Developers
-
-- **Developer**: Mathicorn Team
-- **Email**: contact@mathicorn.com
-- **Project Link**: https://github.com/your-username/funny-calc
-
-## 🙏 Acknowledgments
-
-This project was made possible with the help of the Flutter community, Supabase team, and open-source projects.
 
 ---
 

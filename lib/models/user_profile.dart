@@ -6,6 +6,7 @@ class UserProfile {
   final int totalProblems;
   final List<String> collectedStickers;
   final List<MathProblem> wrongProblems;
+  final String? profileImageUrl;
 
   UserProfile({
     required this.name,
@@ -13,6 +14,7 @@ class UserProfile {
     this.totalProblems = 0,
     this.collectedStickers = const [],
     this.wrongProblems = const [],
+    this.profileImageUrl,
   });
 
   UserProfile copyWith({
@@ -21,6 +23,7 @@ class UserProfile {
     int? totalProblems,
     List<String>? collectedStickers,
     List<MathProblem>? wrongProblems,
+    String? profileImageUrl,
   }) {
     return UserProfile(
       name: name ?? this.name,
@@ -28,6 +31,7 @@ class UserProfile {
       totalProblems: totalProblems ?? this.totalProblems,
       collectedStickers: collectedStickers ?? this.collectedStickers,
       wrongProblems: wrongProblems ?? this.wrongProblems,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
     );
   }
 
@@ -37,6 +41,7 @@ class UserProfile {
       'totalScore': totalScore,
       'totalProblems': totalProblems,
       'collectedStickers': collectedStickers,
+      'profileImageUrl': profileImageUrl,
     };
   }
 
@@ -46,6 +51,7 @@ class UserProfile {
       totalScore: json['totalScore'] ?? 0,
       totalProblems: json['totalProblems'] ?? 0,
       collectedStickers: List<String>.from(json['collectedStickers'] ?? []),
+      profileImageUrl: json['profileImageUrl'],
     );
   }
 } 
