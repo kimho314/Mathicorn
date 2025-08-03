@@ -7,6 +7,7 @@ import 'package:Mathicorn/screens/main_shell.dart';
 import '../utils/unicorn_theme.dart';
 
 import 'package:flutter/foundation.dart';
+import 'dart:ui';
 
 import 'dart:io' as io;
 
@@ -32,7 +33,7 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateMixin {
   final _nameController = TextEditingController();
   bool _isEditing = false;
   UserProfile? _userProfile;
@@ -44,10 +45,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
   dynamic _selectedImageFile; // 선택된 이미지 파일 임시 저장
   Uint8List? _selectedImageBytes; // 선택된 이미지의 바이트 데이터 (웹용)
   bool _isSavingProfile = false; // 프로필 저장 중 상태
+  late AnimationController _skeletonAnimationController;
+  late Animation<double> _skeletonAnimation;
 
   @override
   void initState() {
     super.initState();
+    
+    // 스켈레톤 애니메이션 초기화
+    _skeletonAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _skeletonAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _skeletonAnimationController,
+      curve: Curves.easeInOut,
+    ));
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchUserProfileFromSupabase();
     });
@@ -63,12 +80,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _skeletonAnimationController.dispose();
     super.dispose();
   }
 
   Future<void> _fetchUserProfileFromSupabase() async {
     print('Debug: Starting _fetchUserProfileFromSupabase');
     setState(() { _loading = true; _error = null; });
+    
+    // 스켈레톤 애니메이션 시작
+    _skeletonAnimationController.repeat();
     
     while (_retryCount <= _maxRetries) {
       try {
@@ -83,6 +104,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _loading = false;
           _retryCount = 0; // 성공 시 재시도 카운트 리셋
         });
+        
+        // 스켈레톤 애니메이션 중지
+        _skeletonAnimationController.stop();
         
         print('Debug: Profile state updated - _userProfile?.name: ${_userProfile?.name}');
         print('Debug: Triggering rebuild...');
@@ -99,6 +123,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _error = 'Network Error';
             _loading = false;
           });
+          
+          // 스켈레톤 애니메이션 중지
+          _skeletonAnimationController.stop();
+          
           _showNetworkErrorDialog();
           return;
         }
@@ -269,7 +297,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Container(
           decoration: UnicornDecorations.appBackground,
           child: _loading
-              ? const Center(child: CircularProgressIndicator())
+              ? _buildSkeletonUI()
               : _error != null
                   ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
                   : SingleChildScrollView(
@@ -1119,6 +1147,280 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // 스켈레톤 UI 빌드 메서드
+  Widget _buildSkeletonUI() {
+    return AnimatedBuilder(
+      animation: _skeletonAnimation,
+      builder: (context, child) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              // 프로필 카드 스켈레톤
+              _buildProfileCardSkeleton(),
+              const SizedBox(height: 24),
+              // 통계 카드 스켈레톤
+              _buildStatsCardSkeleton(),
+              const SizedBox(height: 24),
+              // 스티커 갤러리 스켈레톤
+              _buildStickerGallerySkeleton(),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // 프로필 카드 스켈레톤
+  Widget _buildProfileCardSkeleton() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.25),
+            Colors.white.withOpacity(0.10),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.transparent,
+            ),
+            child: Column(
+              children: [
+                // 프로필 이미지 스켈레톤
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15 + (0.1 * _skeletonAnimation.value)),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // 닉네임 스켈레톤
+                Container(
+                  width: 120,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15 + (0.1 * _skeletonAnimation.value)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 통계 카드 스켈레톤
+  Widget _buildStatsCardSkeleton() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.25),
+            Colors.white.withOpacity(0.10),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.transparent,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 제목 스켈레톤
+                Container(
+                  width: 180,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15 + (0.1 * _skeletonAnimation.value)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // 통계 항목들 스켈레톤
+                Row(
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15 + (0.1 * _skeletonAnimation.value)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 60,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15 + (0.1 * _skeletonAnimation.value)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Container(
+                      width: 120,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15 + (0.1 * _skeletonAnimation.value)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 60,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15 + (0.1 * _skeletonAnimation.value)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 스티커 갤러리 스켈레톤
+  Widget _buildStickerGallerySkeleton() {
+    return Container(
+      height: 300,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.25),
+            Colors.white.withOpacity(0.10),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.transparent,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 제목 스켈레톤
+                Container(
+                  width: 160,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15 + (0.1 * _skeletonAnimation.value)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // 스티커 그리드 스켈레톤
+                Expanded(
+                  child: GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                    ),
+                    itemCount: 8, // 8개의 스켈레톤 아이템
+                    itemBuilder: (context, index) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1 + (0.05 * _skeletonAnimation.value)),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white.withOpacity(0.15 + (0.1 * _skeletonAnimation.value))),
+                        ),
+                        child: Center(
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.15 + (0.1 * _skeletonAnimation.value)),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
