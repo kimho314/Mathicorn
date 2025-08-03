@@ -28,6 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   static const int _maxRetries = 2;
   bool _isUploadingImage = false;
   dynamic _selectedImageFile; // 선택된 이미지 파일 임시 저장
+  bool _isSavingProfile = false; // 프로필 저장 중 상태
 
   @override
   void initState() {
@@ -211,17 +212,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
           shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              setState(() {
-                _isEditing = !_isEditing;
-                if (!_isEditing) {
-                  _saveProfile();
-                }
-              });
-            },
-            icon: Icon(_isEditing ? Icons.save : Icons.edit),
-          ),
+                     IconButton(
+             onPressed: _isSavingProfile ? null : () {
+               setState(() {
+                 _isEditing = !_isEditing;
+                 if (!_isEditing) {
+                   _saveProfile();
+                 }
+               });
+             },
+             icon: _isSavingProfile 
+                 ? const SizedBox(
+                     width: 20,
+                     height: 20,
+                     child: CircularProgressIndicator(
+                       strokeWidth: 2,
+                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                     ),
+                   )
+                 : Icon(_isEditing ? Icons.save : Icons.edit),
+           ),
           IconButton(
             tooltip: 'Logout',
             icon: const Icon(Icons.logout),
@@ -646,14 +656,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-    void _saveProfile() async {
-    try {
-      final authProvider = context.read<AuthProvider>();
-      final gameProvider = context.read<GameProvider>();
-      
-      final newNickname = _nameController.text.trim();
-      
-      print('Debug: Saving profile with new nickname: $newNickname');
+         void _saveProfile() async {
+     try {
+       setState(() {
+         _isSavingProfile = true;
+       });
+       
+       final authProvider = context.read<AuthProvider>();
+       final gameProvider = context.read<GameProvider>();
+       
+       final newNickname = _nameController.text.trim();
+       
+       print('Debug: Saving profile with new nickname: $newNickname');
       
       // 선택된 이미지가 있으면 업로드
       if (_selectedImageFile != null) {
@@ -713,22 +727,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
       // UI 업데이트를 위해 프로필 새로고침
       await _fetchUserProfileFromSupabase();
       
-      print('Debug: Profile refreshed from database');
-      print('Debug: Current _userProfile?.name: ${_userProfile?.name}');
-      
-      // 프로필 저장 완료 - 스낵바 표시 제거
-    } catch (e) {
-      print('Error saving profile: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to save profile: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
+             print('Debug: Profile refreshed from database');
+       print('Debug: Current _userProfile?.name: ${_userProfile?.name}');
+       
+       // 프로필 저장 완료 다이얼로그 표시
+       if (mounted) {
+         _showProfileSavedDialog();
+       }
+     } catch (e) {
+       print('Error saving profile: $e');
+       if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(
+             content: Text('Failed to save profile: ${e.toString()}'),
+             backgroundColor: Colors.red,
+           ),
+         );
+       }
+     } finally {
+       if (mounted) {
+         setState(() {
+           _isSavingProfile = false;
+         });
+       }
+     }
+   }
 
   // 이미지 선택 메서드 (업로드는 저장 시에만)
   Future<void> _pickImage({bool fromCamera = false}) async {
@@ -853,7 +876,110 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showStatDetailDialog(String title, Color color) {
+     void _showProfileSavedDialog() {
+     showDialog(
+       context: context,
+       barrierDismissible: false,
+       builder: (context) => Dialog(
+         backgroundColor: Colors.transparent,
+         child: Container(
+           padding: const EdgeInsets.all(24),
+           decoration: BoxDecoration(
+             gradient: LinearGradient(
+               begin: Alignment.topLeft,
+               end: Alignment.bottomRight,
+               colors: [
+                 Colors.white.withOpacity(0.25),
+                 Colors.white.withOpacity(0.1),
+               ],
+             ),
+             borderRadius: BorderRadius.circular(24),
+             border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+             boxShadow: [
+               BoxShadow(
+                 color: Colors.black.withOpacity(0.10),
+                 blurRadius: 16,
+                 offset: const Offset(0, 8),
+               ),
+             ],
+           ),
+           child: Column(
+             mainAxisSize: MainAxisSize.min,
+             children: [
+               Container(
+                 padding: const EdgeInsets.all(16),
+                 decoration: BoxDecoration(
+                   gradient: LinearGradient(
+                     begin: Alignment.topLeft,
+                     end: Alignment.bottomRight,
+                     colors: [
+                       Colors.white.withOpacity(0.3),
+                       Colors.white.withOpacity(0.15),
+                     ],
+                   ),
+                   borderRadius: BorderRadius.circular(50),
+                   border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+                 ),
+                 child: const Icon(
+                   Icons.check_circle,
+                   color: Colors.white,
+                   size: 32,
+                 ),
+               ),
+               const SizedBox(height: 16),
+               const Text(
+                 'Profile Updated!',
+                 style: TextStyle(
+                   color: Colors.white,
+                   fontSize: 20,
+                   fontWeight: FontWeight.w600,
+                   shadows: [Shadow(offset: Offset(1,1), blurRadius: 2, color: Colors.black12)],
+                 ),
+               ),
+               const SizedBox(height: 12),
+               Text(
+                 'Your profile has been successfully updated.',
+                 textAlign: TextAlign.center,
+                 style: TextStyle(
+                   color: Colors.white.withOpacity(0.7),
+                   fontSize: 16,
+                   fontWeight: FontWeight.w400,
+                 ),
+               ),
+               const SizedBox(height: 24),
+               SizedBox(
+                 width: double.infinity,
+                 child: ElevatedButton(
+                   onPressed: () {
+                     Navigator.of(context).pop();
+                   },
+                   style: ElevatedButton.styleFrom(
+                     backgroundColor: Colors.white.withOpacity(0.9),
+                     foregroundColor: const Color(0xFF8B5CF6),
+                     padding: const EdgeInsets.symmetric(vertical: 12),
+                     shape: RoundedRectangleBorder(
+                       borderRadius: BorderRadius.circular(12),
+                     ),
+                     shadowColor: Colors.black.withOpacity(0.1),
+                     elevation: 2,
+                   ),
+                   child: const Text(
+                     'OK',
+                     style: TextStyle(
+                       fontSize: 16,
+                       fontWeight: FontWeight.w600,
+                     ),
+                   ),
+                 ),
+               ),
+             ],
+           ),
+         ),
+       ),
+     );
+   }
+
+   void _showStatDetailDialog(String title, Color color) {
     String description = '';
     String howToImprove = '';
     IconData icon = Icons.info;
