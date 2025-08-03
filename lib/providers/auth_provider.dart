@@ -423,31 +423,16 @@ class AuthProvider with ChangeNotifier {
       
       // Create proper File objects for upload
       if (kIsWeb) {
-        print('Debug: Running on web, creating File from Blob');
+        print('Debug: Running on web, using uploadBinary method');
         try {
-          // Create a Blob and then a File from it
-          final blob = html.Blob([imageBytes], 'image/jpeg');
-          final file = html.File([blob], fileName);
-          
-          print('Debug: Uploading File object to Supabase Storage...');
+          // For web, use uploadBinary directly
           await Supabase.instance.client.storage
               .from('avatars')
-              .upload(filePath, file);
-          print('Debug: Image uploaded successfully with File object (web)');
+              .uploadBinary(filePath, imageBytes);
+          print('Debug: Image uploaded successfully with uploadBinary (web)');
         } catch (webError) {
-          print('Debug: Web File upload failed: $webError');
-          
-          // Try with uploadBinary as fallback
-          try {
-            print('Debug: Trying uploadBinary as fallback...');
-            await Supabase.instance.client.storage
-                .from('avatars')
-                .uploadBinary(filePath, imageBytes);
-            print('Debug: Image uploaded successfully with uploadBinary (web)');
-          } catch (binaryError) {
-            print('Debug: uploadBinary also failed: $binaryError');
-            throw Exception('All web upload methods failed: $binaryError');
-          }
+          print('Debug: Web uploadBinary failed: $webError');
+          throw Exception('Web upload failed: $webError');
         }
              } else {
          print('Debug: Running on mobile, using uploadBinary method');
@@ -459,18 +444,7 @@ class AuthProvider with ChangeNotifier {
            print('Debug: Image uploaded successfully with uploadBinary (mobile)');
          } catch (mobileError) {
            print('Debug: Mobile uploadBinary failed: $mobileError');
-           
-           // Try with regular upload as fallback
-           try {
-             print('Debug: Trying regular upload as fallback...');
-             await Supabase.instance.client.storage
-                 .from('avatars')
-                 .upload(filePath, imageBytes);
-             print('Debug: Image uploaded successfully with regular upload (mobile)');
-           } catch (fallbackError) {
-             print('Debug: Regular upload also failed: $fallbackError');
-             throw Exception('All mobile upload methods failed: $fallbackError');
-           }
+           throw Exception('Mobile upload failed: $mobileError');
          }
        }
 

@@ -5,11 +5,25 @@ import 'package:Mathicorn/models/user_profile.dart';
 import 'package:Mathicorn/providers/auth_provider.dart';
 import 'package:Mathicorn/screens/main_shell.dart';
 import '../utils/unicorn_theme.dart';
-import 'package:image_picker/image_picker.dart';
+
 import 'package:flutter/foundation.dart';
 
-// Platform-specific imports for mobile only
-import 'dart:io' if (dart.library.html) 'dart:html' as platform;
+import 'dart:io' as io;
+
+// Helper function to create File object safely
+dynamic createFileObject(String path) {
+  if (kIsWeb) {
+    return null; // Web doesn't need File object
+  } else {
+    try {
+      // Create File object for mobile platforms
+      return io.File(path);
+    } catch (e) {
+      print('Error creating File object: $e');
+      return null;
+    }
+  }
+}
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -28,6 +42,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   static const int _maxRetries = 2;
   bool _isUploadingImage = false;
   dynamic _selectedImageFile; // 선택된 이미지 파일 임시 저장
+  Uint8List? _selectedImageBytes; // 선택된 이미지의 바이트 데이터 (웹용)
   bool _isSavingProfile = false; // 프로필 저장 중 상태
 
   @override
@@ -305,33 +320,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Stack(
             children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: const Color(0xFFF8FAFC),
-                backgroundImage: _userProfile?.profileImageUrl != null
-                    ? (_userProfile!.profileImageUrl!.startsWith('file://')
-                        ? null // 로컬 파일은 Web에서 표시하지 않음
-                        : (() {
-                            try {
-                              print('Debug: Creating NetworkImage with URL: ${_userProfile!.profileImageUrl}');
-                              return NetworkImage(_userProfile!.profileImageUrl!) as ImageProvider;
-                            } catch (e) {
-                              print('Debug: Error creating NetworkImage: $e');
-                              return null;
-                            }
-                          })())
-                    : null,
-                child: _userProfile?.profileImageUrl == null
-                    ? Text(
-                        (_userProfile?.name ?? auth.nickname).substring(0, 1).toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF8B5CF6),
-                        ),
-                      )
-                    : null,
-              ),
+                             CircleAvatar(
+                 radius: 50,
+                 backgroundColor: const Color(0xFFF8FAFC),
+                                   backgroundImage: _selectedImageFile != null
+                      ? (kIsWeb 
+                          ? (_selectedImageBytes != null 
+                              ? MemoryImage(_selectedImageBytes!) as ImageProvider
+                              : null)
+                          : FileImage(createFileObject(_selectedImageFile.path)) as ImageProvider)
+                      : (_userProfile?.profileImageUrl != null
+                         ? (_userProfile!.profileImageUrl!.startsWith('file://')
+                             ? null // 로컬 파일은 Web에서 표시하지 않음
+                             : (() {
+                                 try {
+                                   print('Debug: Creating NetworkImage with URL: ${_userProfile!.profileImageUrl}');
+                                   return NetworkImage(_userProfile!.profileImageUrl!) as ImageProvider;
+                                 } catch (e) {
+                                   print('Debug: Error creating NetworkImage: $e');
+                                   return null;
+                                 }
+                               })())
+                         : null),
+                 child: (_userProfile?.profileImageUrl == null && _selectedImageFile == null)
+                     ? Text(
+                         (_userProfile?.name ?? auth.nickname).substring(0, 1).toUpperCase(),
+                         style: const TextStyle(
+                           fontSize: 40,
+                           fontWeight: FontWeight.bold,
+                           color: Color(0xFF8B5CF6),
+                         ),
+                       )
+                     : null,
+               ),
                              if (_isEditing)
                  Positioned(
                    bottom: 0,
@@ -676,13 +697,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _isUploadingImage = true;
         });
         
-        try {
-          final imageUrl = await authProvider.uploadProfileImage(_selectedImageFile);
+                 try {
+                       final imageUrl = await authProvider.uploadProfileImage(
+              kIsWeb ? _selectedImageFile : createFileObject(_selectedImageFile.path)
+            );
           if (imageUrl != null) {
             print('Debug: Image uploaded successfully, updating profile');
             await authProvider.updateProfileImage(imageUrl);
             setState(() {
               _selectedImageFile = null; // 업로드 완료 후 초기화
+              _selectedImageBytes = null; // 이미지 바이트도 초기화
             });
           } else {
             print('Debug: Image upload failed');
@@ -764,12 +788,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final authProvider = context.read<AuthProvider>();
       final imageFile = await authProvider.pickImage(fromCamera: fromCamera);
       
-             if (imageFile != null) {
-         print('Debug: Image picked successfully, type: ${imageFile.runtimeType}');
-         setState(() {
-           _selectedImageFile = imageFile;
-         });
-       } else {
+                   if (imageFile != null) {
+        print('Debug: Image picked successfully, type: ${imageFile.runtimeType}');
+        
+        // Load image bytes for web preview
+        Uint8List? imageBytes;
+        if (kIsWeb) {
+          try {
+            imageBytes = await imageFile.readAsBytes();
+            print('Debug: Image bytes loaded for web preview');
+          } catch (e) {
+            print('Debug: Error loading image bytes: $e');
+          }
+        }
+        
+        setState(() {
+          _selectedImageFile = imageFile;
+          _selectedImageBytes = imageBytes;
+        });
+      } else {
         print('Debug: No image selected');
       }
     } catch (e) {
@@ -797,6 +834,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await authProvider.deleteProfileImage();
       setState(() {
         _selectedImageFile = null; // 선택된 이미지도 초기화
+        _selectedImageBytes = null; // 이미지 바이트도 초기화
       });
       await _fetchUserProfileFromSupabase(); // 프로필 새로고침
       if (mounted) {
