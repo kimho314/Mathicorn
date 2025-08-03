@@ -27,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _retryCount = 0;
   static const int _maxRetries = 2;
   bool _isUploadingImage = false;
+  dynamic _selectedImageFile; // 선택된 이미지 파일 임시 저장
 
   @override
   void initState() {
@@ -321,48 +322,76 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       )
                     : null,
               ),
-              if (_isEditing)
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF8B5CF6),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: IconButton(
-                      icon: _isUploadingImage
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : const Icon(
-                              Icons.camera_alt,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                      onPressed: _isUploadingImage ? null : _showImagePickerDialog,
-                    ),
-                  ),
-                ),
+                             if (_isEditing)
+                 Positioned(
+                   bottom: 0,
+                   right: 0,
+                   child: Container(
+                                           decoration: BoxDecoration(
+                        color: _selectedImageFile != null 
+                            ? const Color(0xFF8B5CF6).withOpacity(0.9)
+                            : Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                     child: IconButton(
+                       icon: _isUploadingImage
+                           ? const SizedBox(
+                               width: 20,
+                               height: 20,
+                               child: CircularProgressIndicator(
+                                 strokeWidth: 2,
+                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                               ),
+                             )
+                           : Icon(
+                               _selectedImageFile != null 
+                                   ? Icons.check 
+                                   : Icons.camera_alt,
+                               color: Colors.white,
+                               size: 20,
+                             ),
+                       onPressed: _isUploadingImage ? null : _showImagePickerDialog,
+                     ),
+                   ),
+                 ),
             ],
           ),
           const SizedBox(height: 16),
           if (_isEditing) ...[
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nickname',
-                border: OutlineInputBorder(),
-              ),
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18),
-            ),
+                         Container(
+                               decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+                ),
+               child: TextField(
+                 controller: _nameController,
+                 decoration: const InputDecoration(
+                   labelText: 'Nickname',
+                   labelStyle: TextStyle(
+                     color: Colors.white70,
+                     fontSize: 16,
+                     fontWeight: FontWeight.w500,
+                   ),
+                   border: InputBorder.none,
+                   contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                 ),
+                 textAlign: TextAlign.center,
+                 style: const TextStyle(
+                   fontSize: 18,
+                   color: Colors.white,
+                   fontWeight: FontWeight.w500,
+                 ),
+               ),
+             ),
             const SizedBox(height: 16),
           ] else ...[
             Builder(
@@ -617,7 +646,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void _saveProfile() async {
+    void _saveProfile() async {
     try {
       final authProvider = context.read<AuthProvider>();
       final gameProvider = context.read<GameProvider>();
@@ -626,7 +655,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
       
       print('Debug: Saving profile with new nickname: $newNickname');
       
-      // 닉네임만 업데이트 (users 테이블)
+      // 선택된 이미지가 있으면 업로드
+      if (_selectedImageFile != null) {
+        print('Debug: Uploading selected image...');
+        setState(() {
+          _isUploadingImage = true;
+        });
+        
+        try {
+          final imageUrl = await authProvider.uploadProfileImage(_selectedImageFile);
+          if (imageUrl != null) {
+            print('Debug: Image uploaded successfully, updating profile');
+            await authProvider.updateProfileImage(imageUrl);
+            setState(() {
+              _selectedImageFile = null; // 업로드 완료 후 초기화
+            });
+          } else {
+            print('Debug: Image upload failed');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Failed to upload image. Please try again.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+            return; // 이미지 업로드 실패 시 저장 중단
+          }
+        } catch (e) {
+          print('Error uploading image: $e');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to upload image: ${e.toString()}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return; // 이미지 업로드 실패 시 저장 중단
+        } finally {
+          setState(() {
+            _isUploadingImage = false;
+          });
+        }
+      }
+      
+      // 닉네임 업데이트 (users 테이블)
       await authProvider.updateNickname(newNickname);
       
       print('Debug: Nickname updated in database');
@@ -642,14 +716,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       print('Debug: Profile refreshed from database');
       print('Debug: Current _userProfile?.name: ${_userProfile?.name}');
       
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile saved successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
+      // 프로필 저장 완료 - 스낵바 표시 제거
     } catch (e) {
       print('Error saving profile: $e');
       if (mounted) {
@@ -663,55 +730,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // 이미지 선택 및 업로드 메서드들
-  Future<void> _pickAndUploadImage({bool fromCamera = false}) async {
+  // 이미지 선택 메서드 (업로드는 저장 시에만)
+  Future<void> _pickImage({bool fromCamera = false}) async {
     try {
       setState(() {
         _isUploadingImage = true;
       });
 
-      print('Debug: Starting image pick and upload process');
+      print('Debug: Starting image pick process');
       final authProvider = context.read<AuthProvider>();
       final imageFile = await authProvider.pickImage(fromCamera: fromCamera);
       
-      if (imageFile != null) {
-        print('Debug: Image picked successfully, type: ${imageFile.runtimeType}');
-        final imageUrl = await authProvider.uploadProfileImage(imageFile);
-        print('Debug: Image upload result: $imageUrl');
-        
-        if (imageUrl != null) {
-          print('Debug: Updating profile with new image URL');
-          await authProvider.updateProfileImage(imageUrl);
-          print('Debug: Profile updated, refreshing UI');
-          await _fetchUserProfileFromSupabase(); // 프로필 새로고침
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Profile image updated successfully!'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          }
-        } else {
-          print('Debug: Image upload failed - no URL returned');
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Failed to upload image. Please try again.'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        }
-      } else {
+             if (imageFile != null) {
+         print('Debug: Image picked successfully, type: ${imageFile.runtimeType}');
+         setState(() {
+           _selectedImageFile = imageFile;
+         });
+       } else {
         print('Debug: No image selected');
       }
     } catch (e) {
-      print('Error in _pickAndUploadImage: $e');
+      print('Error in _pickImage: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Image upload failed: ${e.toString()}'),
+            content: Text('Failed to select image: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -729,6 +772,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final authProvider = context.read<AuthProvider>();
       await authProvider.deleteProfileImage();
+      setState(() {
+        _selectedImageFile = null; // 선택된 이미지도 초기화
+      });
       await _fetchUserProfileFromSupabase(); // 프로필 새로고침
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -768,22 +814,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt, color: Color(0xFF8B5CF6)),
-              title: const Text('Take Photo'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickAndUploadImage(fromCamera: true);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library, color: Color(0xFF8B5CF6)),
-              title: const Text('Choose from Gallery'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickAndUploadImage(fromCamera: false);
-              },
-            ),
+                         ListTile(
+               leading: const Icon(Icons.camera_alt, color: Color(0xFF8B5CF6)),
+               title: const Text('Take Photo'),
+               onTap: () {
+                 Navigator.pop(context);
+                 _pickImage(fromCamera: true);
+               },
+             ),
+             ListTile(
+               leading: const Icon(Icons.photo_library, color: Color(0xFF8B5CF6)),
+               title: const Text('Choose from Gallery'),
+               onTap: () {
+                 Navigator.pop(context);
+                 _pickImage(fromCamera: false);
+               },
+             ),
             if (_userProfile?.profileImageUrl != null) ...[
               const Divider(),
               ListTile(
