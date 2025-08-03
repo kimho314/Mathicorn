@@ -660,6 +660,10 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
         ? GameLevel.values[currentLevel.index + 1]
         : null;
     print('ResultScreen: nextLevel = ' + (nextLevel?.toString() ?? 'null'));
+    
+    // Check if current level is lv12 (the last level)
+    final isLv12Completed = currentLevel == GameLevel.level12;
+    
     return Column(
       children: [
         if (nextLevel != null)
@@ -701,6 +705,45 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
             ),
           ),
         if (nextLevel != null) const SizedBox(height: 16),
+        if (isLv12Completed)
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: () {
+                print('ResultScreen: Starting lv1 game after lv12 completion');
+                gameProvider.setGameSettings(
+                  totalProblems: gameProvider.totalProblems,
+                  operations: LevelManager.getLevelConfig(GameLevel.level1).operations,
+                  level: GameLevel.level1,
+                );
+                gameProvider.startGame();
+                Navigator.of(context).popUntil((route) => route.isFirst);
+                if (MainShell.setTabIndex != null) {
+                  MainShell.setTabIndex!(2);
+                }
+                if (widget.onClose != null) {
+                  widget.onClose!();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF8B5CF6),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 4,
+              ),
+              child: const Text(
+                'Retry',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        if (isLv12Completed) const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
           height: 56,
