@@ -45,6 +45,9 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
   late AnimationController _skeletonAnimationController;
   late Animation<double> _skeletonShimmerAnimation;
 
+  // 해당 레벨 스티커 이미 보유 여부
+  bool _alreadyHadStickerForLevel = false;
+
   @override
   void initState() {
     super.initState();
@@ -119,6 +122,9 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
       if (score == 100 && widget.selectedLevel != null) {
         final stickerName = _getStickerNameForLevel(widget.selectedLevel!);
         if (stickerName != null) {
+          // 이미 보유 여부 확인 (저장 이전의 상태 기준)
+          final collected = await auth.getCollectedStickers();
+          _alreadyHadStickerForLevel = collected.contains(stickerName);
           await auth.addStickerToCollection(stickerName);
         }
       }
@@ -134,8 +140,8 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
         _animationController.forward();
         _catAnimationController.repeat(reverse: true);
 
-        // 100점 달성 시 스티커 애니메이션 시작
-        if (score == 100 && widget.selectedLevel != null) {
+        // 100점 달성 시 스티커 애니메이션 시작 (신규 획득인 경우에만)
+        if (score == 100 && widget.selectedLevel != null && !_alreadyHadStickerForLevel) {
           _stickerAnimationController.forward();
         }
       }
@@ -541,10 +547,33 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
       );
     }
 
-    // 100점 달성 시 레벨별 스티커 보상 (애니메이션 적용)
+    // 100점 달성 시
     final currentLevel = widget.selectedLevel;
     if (currentLevel == null) return const SizedBox.shrink();
 
+    // 이미 해당 레벨 스티커를 보유하고 있으면 nailed.png 표시
+    if (_alreadyHadStickerForLevel) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        decoration: const BoxDecoration(color: Colors.transparent),
+        child: Column(
+          children: [
+            Center(
+              child: Image.asset(
+                'assets/images/nailed.png',
+                height: 200,
+                width: 200,
+                fit: BoxFit.contain,
+                cacheWidth: 400,
+                cacheHeight: 400,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 새로 획득한 경우 기존 스티커 애니메이션 표시
     final stickerImage = _getStickerForLevel(currentLevel);
     if (stickerImage == null) return const SizedBox.shrink();
 
@@ -574,10 +603,10 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                 Center(
                   child: Image.asset(
                     stickerImage,
-                    height: 160, // 200 → 160
-                    width: 160,  // 200 → 160
-                    fit: BoxFit.contain, // 추가
-                    cacheWidth: 320, // 2x for high DPI displays
+                    height: 160,
+                    width: 160,
+                    fit: BoxFit.contain,
+                    cacheWidth: 320,
                     cacheHeight: 320,
                   ),
                 ),
@@ -747,7 +776,7 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
         SizedBox(
           width: double.infinity,
           height: 56,
-          child: OutlinedButton(
+          child: ElevatedButton(
             onPressed: () {
               Navigator.of(context).popUntil((route) => route.isFirst);
               if (MainShell.setTabIndex != null) {
@@ -757,17 +786,17 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                 widget.onClose!();
               }
             },
-            style: OutlinedButton.styleFrom(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF8B5CF6),
               foregroundColor: Colors.white,
-              side: const BorderSide(color: Color(0xFF8B5CF6), width: 2),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
+              elevation: 4,
             ),
             child: const Text(
               'Back to Home',
               style: TextStyle(
-                color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
