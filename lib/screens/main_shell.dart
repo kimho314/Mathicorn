@@ -27,6 +27,8 @@ class MainShell extends StatefulWidget {
   
   // 이메일 확인 다이얼로그 표시를 위한 static 콜백
   static void Function()? showEmailConfirmation;
+  // Auth 화면 열기 (네비게이션 바 유지)
+  static void Function(bool showSignUp, VoidCallback? onAuthenticated)? openAuth;
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -35,6 +37,8 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _selectedIndex = 0;
   Map<String, dynamic>? _resultScreenData;
+  bool _authShowSignUp = false;
+  VoidCallback? _postAuthCallback;
 
   static _MainShellState? _instance;
 
@@ -81,6 +85,19 @@ class _MainShellState extends State<MainShell> {
         });
       }
     };
+
+    // Auth 화면으로 이동하기 위한 메서드 (네비게이션 바 유지)
+    MainShell.openAuth = (bool showSignUp, VoidCallback? onAuthenticated) {
+      if (_instance != null && _instance!.mounted) {
+        _instance!.setState(() {
+          // 결과 화면을 닫아야 AuthScreen이 보임
+          _instance!._resultScreenData = null;
+          _instance!._authShowSignUp = showSignUp;
+          _instance!._selectedIndex = 7;
+          _instance!._postAuthCallback = onAuthenticated;
+        });
+      }
+    };
   }
 
   @override
@@ -88,6 +105,7 @@ class _MainShellState extends State<MainShell> {
     MainShell.setTabIndex = null;
     MainShell.showResultScreen = null;
     MainShell.showEmailConfirmation = null;
+    MainShell.openAuth = null;
     _instance = null;
     super.dispose();
   }
@@ -312,7 +330,22 @@ class _MainShellState extends State<MainShell> {
                   setState(() => _resultScreenData = null);
                 },
               )
-            : _screens[_selectedIndex],
+            : (_selectedIndex == 7
+                ? AuthScreen(
+                    showSignUp: _authShowSignUp,
+                    // 인증 완료 후 콜백: 결과 화면 복귀 및 리워드 재평가
+                    onAuthenticated: () {
+                      if (mounted) {
+                        setState(() {
+                          _selectedIndex = 0; // 홈으로 일단 이동
+                        });
+                        // 콜백이 있으면 실행 (결과 화면 복귀 등)
+                        _postAuthCallback?.call();
+                        _postAuthCallback = null;
+                      }
+                    },
+                  )
+                : _screens[_selectedIndex]),
       ),
       bottomNavigationBar: NavigationBar(
         height: 80,

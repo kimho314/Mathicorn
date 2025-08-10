@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:postgrest/postgrest.dart';
 import 'package:Mathicorn/models/user_profile.dart';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -79,7 +80,9 @@ class AuthProvider with ChangeNotifier {
             e.message.contains('Failed host lookup') ||
             e.message.contains('No address associated with hostname') ||
             e.message.contains('Connection refused') ||
-            e.message.contains('Network is unreachable')) {
+            e.message.contains('Network is unreachable') ||
+            e.message.contains('ClientException') ||
+            e.message.contains('Failed to fetch')) {
           _retryCount++;
           print('[Supabase Login Network AuthException] attempt $_retryCount: ${e.toString()}');
           if (_retryCount <= _maxRetries) {
@@ -92,17 +95,31 @@ class AuthProvider with ChangeNotifier {
             return 'Network Error';
           }
         }
+        // Supabase 응답이 있는 에러는 그대로 메시지 반환
         return e.message;
       } catch (e) {
-        _retryCount++;
-        print('[Supabase Login Exception] attempt $_retryCount: ${e.toString()}');
-        if (_retryCount <= _maxRetries) {
-          // 1초 대기 후 재시도
-          await Future.delayed(const Duration(seconds: 1));
+        final msg = e.toString();
+        // 네트워크 계열만 Network Error로 처리
+        final isNetwork = msg.contains('SocketException') ||
+            msg.contains('Failed host lookup') ||
+            msg.contains('No address associated with hostname') ||
+            msg.contains('Connection refused') ||
+            msg.contains('Network is unreachable') ||
+            msg.contains('HandshakeException') ||
+            msg.contains('ClientException') ||
+            msg.contains('Failed to fetch');
+        if (isNetwork) {
+          _retryCount++;
+          print('[Supabase Login Exception(Network)] attempt $_retryCount: $msg');
+          if (_retryCount <= _maxRetries) {
+            await Future.delayed(const Duration(seconds: 1));
+          } else {
+            print('Max retries reached for login');
+            return 'Network Error';
+          }
         } else {
-          // 최대 재시도 횟수 초과
-          print('Max retries reached for login');
-          return 'Network Error';
+          // 서버 응답이 있는 기타 에러는 메시지 그대로 반환
+          return msg;
         }
       }
     }
@@ -121,12 +138,12 @@ class AuthProvider with ChangeNotifier {
         );
         print('[Supabase SignUp Result] user: ${res.user}, session: ${res.session}');
         if (res.user != null) {
-          // users 테이블에도 정보 저장
-          await Supabase.instance.client.from('users').insert({
+          // users 테이블에도 정보 저장 (충돌 시 업데이트)
+          await Supabase.instance.client.from('users').upsert({
             'id': res.user!.id,
             'email': email,
             'nickname': nickname,
-          });
+          }, onConflict: 'id');
           _updateWrongNoteProvider();
           _retryCount = 0; // 성공 시 재시도 카운트 리셋
           return null;
@@ -143,7 +160,9 @@ class AuthProvider with ChangeNotifier {
             e.message.contains('Failed host lookup') ||
             e.message.contains('No address associated with hostname') ||
             e.message.contains('Connection refused') ||
-            e.message.contains('Network is unreachable')) {
+            e.message.contains('Network is unreachable') ||
+            e.message.contains('ClientException') ||
+            e.message.contains('Failed to fetch')) {
           _retryCount++;
           print('[Supabase SignUp Network AuthException] attempt $_retryCount: ${e.toString()}');
           if (_retryCount <= _maxRetries) {
@@ -156,17 +175,33 @@ class AuthProvider with ChangeNotifier {
             return 'Network Error';
           }
         }
+        // Supabase 응답이 있는 에러는 그대로 메시지 반환
         return e.message;
       } catch (e) {
-        _retryCount++;
-        print('[Supabase SignUp Exception] attempt $_retryCount: ${e.toString()}');
-        if (_retryCount <= _maxRetries) {
-          // 1초 대기 후 재시도
-          await Future.delayed(const Duration(seconds: 1));
+        // PostgrestException 등 서버 응답이 있는 에러는 메시지 그대로 반환
+        if (e is PostgrestException) {
+          return e.message ?? 'Request failed';
+        }
+        final msg = e.toString();
+        final isNetwork = msg.contains('SocketException') ||
+            msg.contains('Failed host lookup') ||
+            msg.contains('No address associated with hostname') ||
+            msg.contains('Connection refused') ||
+            msg.contains('Network is unreachable') ||
+            msg.contains('HandshakeException') ||
+            msg.contains('ClientException') ||
+            msg.contains('Failed to fetch');
+        if (isNetwork) {
+          _retryCount++;
+          print('[Supabase SignUp Exception(Network)] attempt $_retryCount: $msg');
+          if (_retryCount <= _maxRetries) {
+            await Future.delayed(const Duration(seconds: 1));
+          } else {
+            print('Max retries reached for signup');
+            return 'Network Error';
+          }
         } else {
-          // 최대 재시도 횟수 초과
-          print('Max retries reached for signup');
-          return 'Network Error';
+          return msg;
         }
       }
     }

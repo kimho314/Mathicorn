@@ -7,7 +7,8 @@ import '../providers/settings_provider.dart';
 
 class AuthScreen extends StatefulWidget {
   final bool showSignUp;
-  const AuthScreen({this.showSignUp = false, super.key});
+  final VoidCallback? onAuthenticated;
+  const AuthScreen({this.showSignUp = false, this.onAuthenticated, super.key});
   @override
   State<AuthScreen> createState() => _AuthScreenState();
 }
@@ -177,10 +178,20 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                       child: TabBarView(
                         controller: _tabController,
                         physics: const NeverScrollableScrollPhysics(), // 스와이핑 비활성화
-                        children: [
-                          SingleChildScrollView(child: _LoginForm(onNetworkError: _showNetworkErrorDialog)),
-                          SingleChildScrollView(child: _SignUpForm(onNetworkError: _showNetworkErrorDialog)),
-                        ],
+                    children: [
+                      SingleChildScrollView(
+                        child: _LoginForm(
+                          onNetworkError: _showNetworkErrorDialog,
+                          onAuthenticated: widget.onAuthenticated,
+                        ),
+                      ),
+                      SingleChildScrollView(
+                        child: _SignUpForm(
+                          onNetworkError: _showNetworkErrorDialog,
+                          onAuthenticated: widget.onAuthenticated,
+                        ),
+                      ),
+                    ],
                       ),
                     ),
                   ],
@@ -291,8 +302,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
 class _LoginForm extends StatefulWidget {
   final VoidCallback? onNetworkError;
+  final VoidCallback? onAuthenticated;
   
-  const _LoginForm({this.onNetworkError});
+  const _LoginForm({this.onNetworkError, this.onAuthenticated});
   
   @override
   State<_LoginForm> createState() => _LoginFormState();
@@ -342,7 +354,11 @@ class _LoginFormState extends State<_LoginForm> {
         ),
         if (_error != null) ...[
           const SizedBox(height: 8),
-          Text(_error!, style: const TextStyle(color: Colors.red)),
+          Text(
+            _error!,
+            style: const TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
         ],
         const SizedBox(height: 24),
         SizedBox(
@@ -383,6 +399,10 @@ class _LoginFormState extends State<_LoginForm> {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   MainShell.setTabIndex?.call(0);
                   Navigator.of(context).popUntil((route) => route.isFirst);
+                  // 인증 완료 콜백 호출 (결과 화면 복귀 등)
+                  if (widget.onAuthenticated != null) {
+                    widget.onAuthenticated!();
+                  }
                 });
               }
             },
@@ -412,8 +432,9 @@ class _LoginFormState extends State<_LoginForm> {
 
 class _SignUpForm extends StatefulWidget {
   final VoidCallback? onNetworkError;
+  final VoidCallback? onAuthenticated;
   
-  const _SignUpForm({this.onNetworkError});
+  const _SignUpForm({this.onNetworkError, this.onAuthenticated});
   
   @override
   State<_SignUpForm> createState() => _SignUpFormState();
@@ -474,7 +495,11 @@ class _SignUpFormState extends State<_SignUpForm> {
         ),
         if (_error != null) ...[
           const SizedBox(height: 8),
-          Text(_error!, style: const TextStyle(color: Colors.red)),
+          Text(
+            _error!,
+            style: const TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
         ],
         const SizedBox(height: 24),
         SizedBox(
@@ -517,6 +542,10 @@ class _SignUpFormState extends State<_SignUpForm> {
                   Navigator.of(context).popUntil((route) => route.isFirst);
                   // 이메일 인증 다이얼로그 표시
                   MainShell.showEmailConfirmation?.call();
+                  // 인증 완료 콜백 호출
+                  if (widget.onAuthenticated != null) {
+                    widget.onAuthenticated!();
+                  }
                 });
               }
             },

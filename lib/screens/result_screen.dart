@@ -7,6 +7,7 @@ import '../utils/unicorn_theme.dart';
 import 'package:Mathicorn/models/math_problem.dart';
 import 'package:Mathicorn/screens/main_shell.dart';
 import 'package:Mathicorn/screens/game_screen.dart';
+import 'package:Mathicorn/screens/auth_screen.dart';
 import 'package:Mathicorn/providers/auth_provider.dart';
 import 'package:Mathicorn/models/user_profile.dart';
 
@@ -562,6 +563,70 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     // 100점 달성 시
     final currentLevel = widget.selectedLevel;
     if (currentLevel == null) return const SizedBox.shrink();
+
+    // 비로그인 사용자는 스티커 저장 유도 카드 표시
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    if (!auth.isLoggedIn) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: UnicornDecorations.cardGlass,
+        child: Column(
+          children: [
+            const Text(
+              'Save your sticker!',
+              style: UnicornTextStyles.header,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Create a free account to keep this sticker and track your progress.',
+              style: UnicornTextStyles.body,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                style: UnicornButtonStyles.primary,
+                onPressed: () {
+                  // Auth로 이동하되, 인증 성공 시 결과 화면으로 복귀하여 보상 재평가
+                  MainShell.openAuth?.call(true, () {
+                    // 인증 후 결과 화면 복귀
+                    MainShell.showResultScreen?.call(
+                      widget.correctAnswers,
+                      widget.totalProblems,
+                      widget.duration,
+                      widget.selectedLevel,
+                    );
+                  });
+                },
+                child: const Text('Sign up & save sticker'),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () {
+                MainShell.openAuth?.call(false, () {
+                  MainShell.showResultScreen?.call(
+                    widget.correctAnswers,
+                    widget.totalProblems,
+                    widget.duration,
+                    widget.selectedLevel,
+                  );
+                });
+              },
+              child: const Text(
+                'I already have an account',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            // Removed "Maybe later" to encourage conversion
+          ],
+        ),
+      );
+    }
 
     // 이미 해당 레벨 스티커를 보유하고 있으면 nailed.png 표시
     if (_alreadyHadStickerForLevel) {
