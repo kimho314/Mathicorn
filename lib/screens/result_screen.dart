@@ -47,6 +47,8 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
 
   // 해당 레벨 스티커 이미 보유 여부
   bool _alreadyHadStickerForLevel = false;
+  // 레벨 관련 로그 1회만 출력하기 위한 플래그
+  bool _levelLoggedOnce = false;
 
   @override
   void initState() {
@@ -143,6 +145,16 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
         // 100점 달성 시 스티커 애니메이션 시작 (신규 획득인 경우에만)
         if (score == 100 && widget.selectedLevel != null && !_alreadyHadStickerForLevel) {
           _stickerAnimationController.forward();
+        }
+
+        // 레벨 관련 로그는 로직 완료 시점에 1회만 출력
+        if (!_levelLoggedOnce) {
+          final currentLevel = widget.selectedLevel;
+          final nextLevel = currentLevel != null && currentLevel.index < GameLevel.values.length - 1
+              ? GameLevel.values[currentLevel.index + 1]
+              : null;
+          _levelLoggedOnce = true;
+          print('[ResultScreen] level: ${currentLevel?.toString() ?? 'null'}, nextLevel: ${nextLevel?.toString() ?? 'null'}');
         }
       }
     } catch (e) {
@@ -683,12 +695,9 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
   Widget _buildActionButtons() {
     final gameProvider = Provider.of<GameProvider>(context, listen: false);
     final currentLevel = widget.selectedLevel;
-    print('ResultScreen: currentLevel = ' + (currentLevel?.toString() ?? 'null'));
-    print('ResultScreen: GameLevel.values = ' + GameLevel.values.toString());
     final nextLevel = currentLevel != null && currentLevel.index < GameLevel.values.length - 1
         ? GameLevel.values[currentLevel.index + 1]
         : null;
-    print('ResultScreen: nextLevel = ' + (nextLevel?.toString() ?? 'null'));
     
     // Check if current level is lv12 (the last level)
     final isLv12Completed = currentLevel == GameLevel.level12;
